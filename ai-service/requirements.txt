@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+spacy
+pdfminer.six
+python-multipart
+python-dotenv
+pymongo
+requests
