@@ -20,9 +20,7 @@ services:
         sync: false
       - key: CLOUDINARY_API_SECRET
         sync: false
-    disk:
-      name: uploads
-      mountPath: /backend/uploads # Persist uploads if stored locally
+
 
   # AI Service (Python)
   - type: web
