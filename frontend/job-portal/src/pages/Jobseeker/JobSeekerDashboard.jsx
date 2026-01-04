@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getJobs } from '../../redux/slices/jobSlice';
-import JobSeekerLayout from './components/JobSeekerLayout';
-import JobFilters from './components/JobFilters';
-import JobCard from './components/JobCard';
+import JobSeekerLayout from './Components/JobSeekerLayout';
+import JobFilters from './Components/JobFilters';
+import JobCard from './Components/JobCard';
 import { Search, MapPin } from 'lucide-react';
 
 const JobSeekerDashboard = () => {
