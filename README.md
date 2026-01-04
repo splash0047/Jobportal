@@ -17,6 +17,7 @@ A full-stack modern Job Portal application featuring an AI-powered resume analyz
 - [**System Architecture**](docs/ARCHITECTURE.md) - Diagrams, data flow, and deployment stack.
 - [**API Reference**](docs/API_REFERENCE.md) - Endpoints for Backend and AI Service.
 - [**User Guide**](docs/USER_GUIDE.md) - Manual for Candidates and Recruiters.
+- [**🎓 Interview Prep Guide**](docs/INTERVIEW_PREP.md) - Project summary, Q&A, and technical challenges.
 
 ## �🛠️ Tech Stack
 
