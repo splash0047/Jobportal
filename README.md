@@ -13,7 +13,12 @@ A full-stack modern Job Portal application featuring an AI-powered resume analyz
 - **📄 Job Management**: Post search, filter, and apply for jobs.
 - **☁️ Cloud Uploads**: Resume and profile image storage via Cloudinary.
 
-## 🛠️ Tech Stack
+## � Comprehensive Documentation
+- [**System Architecture**](docs/ARCHITECTURE.md) - Diagrams, data flow, and deployment stack.
+- [**API Reference**](docs/API_REFERENCE.md) - Endpoints for Backend and AI Service.
+- [**User Guide**](docs/USER_GUIDE.md) - Manual for Candidates and Recruiters.
+
+## �🛠️ Tech Stack
 
 ### Frontend
 - **React 19** (Vite)
