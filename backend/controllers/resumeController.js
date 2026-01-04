@@ -30,7 +30,8 @@ const uploadResume = async (req, res) => {
 
         console.log('Sending to AI Service...');
         // Assuming AI service is on port 8000
-        const aiResponse = await axios.post('http://localhost:8000/parse-resume', form, {
+        const aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+        const aiResponse = await axios.post(`${aiServiceUrl}/parse-resume`, form, {
             headers: {
                 ...form.getHeaders()
             }

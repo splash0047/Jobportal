@@ -1,6 +1,7 @@
 import io from 'socket.io-client';
 
-const ENDPOINT = 'http://localhost:5000';
+// Use VITE_API_URL from .env, remove '/api' if present (so it points to root for socket)
+const ENDPOINT = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace('/api', '');
 let socket;
 
 export const initiateSocketConnection = (token) => {
