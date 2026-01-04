@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux';
-import JobSeekerLayout from './components/JobSeekerLayout';
+import JobSeekerLayout from './Components/JobSeekerLayout';
 import ResumeUpload from './ResumeUpload';
 import { User, Mail, Save } from 'lucide-react';
 

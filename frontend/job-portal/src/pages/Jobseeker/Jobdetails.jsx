@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getJobById } from '../../redux/slices/jobSlice';
 import { applyForJob } from '../../redux/slices/applicationSlice';
-import JobSeekerLayout from './components/JobSeekerLayout';
+import JobSeekerLayout from './Components/JobSeekerLayout';
 import { MapPin, Briefcase, Calendar, DollarSign, CheckCircle } from 'lucide-react';
 
 const JobDetails = () => {

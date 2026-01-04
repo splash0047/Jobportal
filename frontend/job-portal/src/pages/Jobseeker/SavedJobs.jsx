@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import JobSeekerLayout from './components/JobSeekerLayout';
-import JobCard from './components/JobCard';
+import JobSeekerLayout from './Components/JobSeekerLayout';
+import JobCard from './Components/JobCard';
 import { getJobs } from '../../redux/slices/jobSlice';
 import { Bookmark } from 'lucide-react';
 
