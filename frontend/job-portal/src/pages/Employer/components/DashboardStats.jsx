@@ -3,45 +3,47 @@ import { Briefcase, Users, CheckCircle } from 'lucide-react';
 const DashboardStats = ({ stats }) => {
     const cards = [
         {
-            label: 'Active Jobs',
+            label: 'Active Job Postings',
             value: stats.activeJobs,
             icon: Briefcase,
-            color: 'bg-blue-600',
-            trend: '+12% from last month'
+            iconColor: 'text-brand-indigo',
+            trend: '+12% this month'
         },
         {
             label: 'Total Applicants',
             value: stats.totalApplicants,
             icon: Users,
-            color: 'bg-green-500',
-            trend: '+5% from last month'
+            iconColor: 'text-slate-700 dark:text-slate-300',
+            trend: '+5% this month'
         },
         {
-            label: 'Hired',
+            label: 'Successful Hires',
             value: stats.hired,
             icon: CheckCircle,
-            color: 'bg-purple-600',
-            trend: '+2% from last month'
+            iconColor: 'text-accent-emerald',
+            trend: '+2% this month'
         },
     ];
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-left">
             {cards.map((card, index) => {
                 const Icon = card.icon;
                 return (
-                    <div key={index} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                        <div className="flex items-center justify-between">
+                    <div key={index} className="bg-canvas-card dark:bg-slate-900 rounded-2xl p-6 border border-slate-200/60 dark:border-slate-800/80 shadow-sm flex flex-col justify-between transition-colors duration-300">
+                        <div className="flex items-start justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-500">{card.label}</p>
-                                <p className="text-3xl font-bold text-gray-900 mt-2">{card.value}</p>
+                                <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{card.label}</p>
+                                <p className="text-3xl font-extrabold text-slate-900 dark:text-white font-display mt-2">{card.value}</p>
                             </div>
-                            <div className={`p-4 rounded-xl ${card.color} bg-opacity-10`}>
-                                <Icon className={`w-6 h-6 ${card.color.replace('bg-', 'text-')}`} />
+                            <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/40 dark:border-slate-800/40 flex items-center justify-center">
+                                <Icon className={`w-5 h-5 ${card.iconColor}`} />
                             </div>
                         </div>
-                        <div className="mt-4 flex items-center text-sm text-green-600">
-                            <span>{card.trend}</span>
+                        <div className="mt-5 flex">
+                            <span className="text-[10px] font-bold text-accent-emerald-dark dark:text-accent-emerald bg-accent-emerald/8 dark:bg-accent-emerald/10 border border-accent-emerald/15 dark:border-accent-emerald/20 px-2 py-0.5 rounded-md">
+                                {card.trend}
+                            </span>
                         </div>
                     </div>
                 );

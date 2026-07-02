@@ -2,20 +2,14 @@ import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { register } from '../../redux/slices/authSlice';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, User, Briefcase, Upload, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User, Briefcase, Eye, EyeOff } from 'lucide-react';
 
 const SignUp = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [role, setRole] = useState('recruiter');
+    const [role, setRole] = useState('recruiter'); // Default recruiter / employer
     const [showPassword, setShowPassword] = useState(false);
-
-    // Resume/Profile Picture upload (Logic to be connected to existing backend flow)
-    // For now, mirroring existing fields, but typically signup might just be basic info
-    // The previous implementation didn't have file upload, but the Screenshot 2 shows "Profile Picture".
-    // I will include the UI for it, but for MVP it might just be a placeholder or hook into existing upload logic if available.
-    // Based on previous code, resume upload was separate. I'll stick to core fields + role selection for now to ensure functionality.
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -23,7 +17,7 @@ const SignUp = () => {
 
     useEffect(() => {
         if (user) {
-            if (user.role === 'recruiter') navigate('/employer-dashboard');
+            if (user.role === 'recruiter' || user.role === 'employer') navigate('/employer-dashboard');
             else navigate('/find-jobs');
         }
     }, [user, navigate]);
@@ -34,115 +28,126 @@ const SignUp = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center py-12 sm:px-6 lg:px-8">
-            <div className="sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="bg-white py-8 px-4 shadow-xl shadow-gray-100 sm:rounded-2xl sm:px-10 border border-gray-100">
+        <div className="min-h-screen bg-canvas-bg flex flex-col justify-center items-center py-12 sm:px-6 lg:px-8">
+            <div className="sm:mx-auto sm:w-full sm:max-w-md px-4">
+                <div className="bg-canvas-card py-10 px-6 sm:px-10 border border-slate-200/60 sm:rounded-2xl shadow-xl shadow-slate-100/50">
                     <div className="text-center mb-8">
-                        <h2 className="text-3xl font-bold text-gray-900">Create Account</h2>
-                        <p className="mt-2 text-sm text-gray-600">
-                            Join thousands of professionals and companies
+                        {/* Logo Link */}
+                        <Link to="/" className="inline-flex items-center space-x-2.5 mb-4">
+                            <div className="w-8 h-8 bg-brand-indigo rounded-lg flex items-center justify-center">
+                                <Briefcase className="w-4 h-4 text-white" />
+                            </div>
+                            <span className="text-lg font-bold tracking-tight text-slate-900">JobPortal</span>
+                        </Link>
+                        <h2 className="text-2xl font-extrabold text-slate-900 font-display">Create Account</h2>
+                        <p className="mt-1 text-sm text-slate-500 font-medium">
+                            Join our premium professional network
                         </p>
                     </div>
 
-                    <form className="space-y-6" onSubmit={handleSubmit}>
+                    <form className="space-y-5" onSubmit={handleSubmit}>
                         {error && (
-                            <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm flex items-center">
+                            <div className="bg-red-50 text-red-600 border border-red-100 p-3.5 rounded-xl text-sm font-semibold flex items-center">
                                 {error}
                             </div>
                         )}
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Full Name *</label>
-                            <div className="mt-1 relative rounded-md shadow-sm">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <User className="h-5 w-5 text-gray-400" />
+                            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Full Name *</label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <User className="h-4 w-4 text-slate-400" />
                                 </div>
                                 <input
                                     type="text"
                                     required
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all"
+                                    className="block w-full pl-10 pr-3.5 py-3 border border-slate-200 rounded-xl leading-5 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent text-sm transition-all"
                                     placeholder="Enter your full name"
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Email Address *</label>
-                            <div className="mt-1 relative rounded-md shadow-sm">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <Mail className="h-5 w-5 text-gray-400" />
+                            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Email Address *</label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <Mail className="h-4 w-4 text-slate-400" />
                                 </div>
                                 <input
                                     type="email"
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all"
+                                    className="block w-full pl-10 pr-3.5 py-3 border border-slate-200 rounded-xl leading-5 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent text-sm transition-all"
                                     placeholder="Enter your email"
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Password *</label>
-                            <div className="mt-1 relative rounded-md shadow-sm">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <Lock className="h-5 w-5 text-gray-400" />
+                            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Password *</label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <Lock className="h-4 w-4 text-slate-400" />
                                 </div>
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all"
+                                    className="block w-full pl-10 pr-10 py-3 border border-slate-200 rounded-xl leading-5 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent text-sm transition-all"
                                     placeholder="Create a strong password"
                                 />
-                                <div className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer" onClick={() => setShowPassword(!showPassword)}>
-                                    {showPassword ? <EyeOff className="h-5 w-5 text-gray-400" /> : <Eye className="h-5 w-5 text-gray-400" />}
-                                </div>
+                                <button 
+                                    type="button"
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-slate-400 hover:text-slate-600 transition-colors" 
+                                    onClick={() => setShowPassword(!showPassword)}
+                                >
+                                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">I am a *</label>
+                            <label className="block text-sm font-semibold text-slate-700">Account Type *</label>
                             <div className="grid grid-cols-2 gap-4">
                                 <div
                                     onClick={() => setRole('candidate')}
-                                    className={`relative rounded-xl border-2 p-4 flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-gray-50 ${role === 'candidate' ? 'border-blue-600 bg-blue-50' : 'border-gray-200'}`}
+                                    className={`relative rounded-xl border p-4 flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-slate-50/50 ${role === 'candidate' ? 'border-brand-indigo bg-brand-indigo/5 text-slate-900' : 'border-slate-200 bg-white'}`}
                                 >
-                                    <User className={`h-8 w-8 mb-2 ${role === 'candidate' ? 'text-blue-600' : 'text-gray-400'}`} />
-                                    <span className={`text-sm font-semibold ${role === 'candidate' ? 'text-blue-700' : 'text-gray-600'}`}>Job Seeker</span>
-                                    <span className="text-xs text-gray-400 mt-1">Looking for opportunities</span>
+                                    <User className={`h-6 w-6 mb-2 ${role === 'candidate' ? 'text-brand-indigo' : 'text-slate-400'}`} />
+                                    <span className="text-sm font-bold">Job Seeker</span>
+                                    <span className="text-[10px] text-slate-400 mt-0.5 text-center font-medium">Find opportunities</span>
                                 </div>
 
                                 <div
                                     onClick={() => setRole('recruiter')}
-                                    className={`relative rounded-xl border-2 p-4 flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-gray-50 ${role === 'recruiter' ? 'border-purple-600 bg-purple-50' : 'border-gray-200'}`}
+                                    className={`relative rounded-xl border p-4 flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-slate-50/50 ${role === 'recruiter' ? 'border-slate-800 bg-slate-800/5 text-slate-900' : 'border-slate-200 bg-white'}`}
                                 >
-                                    <Briefcase className={`h-8 w-8 mb-2 ${role === 'recruiter' ? 'text-purple-600' : 'text-gray-400'}`} />
-                                    <span className={`text-sm font-semibold ${role === 'recruiter' ? 'text-purple-700' : 'text-gray-600'}`}>Employer</span>
-                                    <span className="text-xs text-gray-400 mt-1">Hiring talent</span>
+                                    <Briefcase className={`h-6 w-6 mb-2 ${role === 'recruiter' ? 'text-slate-700' : 'text-slate-400'}`} />
+                                    <span className="text-sm font-bold">Employer</span>
+                                    <span className="text-[10px] text-slate-400 mt-0.5 text-center font-medium">Post openings</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div>
+                        <div className="pt-2">
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all transform hover:scale-[1.02]"
+                                className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 transition-all cursor-pointer disabled:opacity-75"
                             >
                                 {loading ? 'Creating Account...' : 'Create Account'}
                             </button>
                         </div>
                     </form>
 
-                    <div className="mt-6 text-center">
-                        <p className="text-sm text-gray-600">
+                    <div className="mt-6 text-center border-t border-slate-100 pt-6">
+                        <p className="text-sm text-slate-500 font-medium">
                             Already have an account?{' '}
-                            <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
+                            <Link to="/login" className="font-bold text-brand-indigo hover:text-brand-indigo-dark transition-colors">
                                 Sign in here
                             </Link>
                         </p>

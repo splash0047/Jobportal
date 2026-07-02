@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import { Box, Paper, Typography, TextField, IconButton, List, ListItem, ListItemText, Divider, Avatar } from '@mui/material';
-import SendIcon from '@mui/icons-material/Send';
-import CloseIcon from '@mui/icons-material/Close';
+import { Send, X } from 'lucide-react';
 import { initiateSocketConnection, disconnectSocket, joinChatRoom, sendMessage, subscribeToMessages } from '../services/socketService';
 import API from '../services/api';
 
@@ -12,7 +10,7 @@ const ChatWindow = ({ recipientId, recipientName, onClose }) => {
     const [newMessage, setNewMessage] = useState('');
     const messagesEndRef = useRef(null);
 
-    // Fetch history
+    // Fetch chat history
     useEffect(() => {
         const fetchHistory = async () => {
             try {
@@ -25,10 +23,10 @@ const ChatWindow = ({ recipientId, recipientName, onClose }) => {
         if (recipientId) fetchHistory();
     }, [recipientId]);
 
-    // Socket Connection
+    // Socket Connection Setup
     useEffect(() => {
         if (user && recipientId) {
-            initiateSocketConnection(user.token); // Pass token if auth logic in socket needed
+            initiateSocketConnection(user.token);
             joinChatRoom(user._id);
 
             subscribeToMessages((message) => {
@@ -46,7 +44,7 @@ const ChatWindow = ({ recipientId, recipientName, onClose }) => {
         }
     }, [user, recipientId]);
 
-    // Auto-scroll
+    // Auto-scroll to bottom on new messages
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
@@ -64,70 +62,71 @@ const ChatWindow = ({ recipientId, recipientName, onClose }) => {
     };
 
     return (
-        <Paper
-            elevation={6}
-            sx={{
-                position: 'fixed',
-                bottom: 20,
-                right: 20,
-                width: 350,
-                height: 500,
-                display: 'flex',
-                flexDirection: 'column',
-                zIndex: 1000
-            }}
-        >
-            {/* Header */}
-            <Box sx={{ p: 2, bgcolor: 'primary.main', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="subtitle1">{recipientName}</Typography>
-                <IconButton size="small" onClick={onClose} sx={{ color: 'white' }}>
-                    <CloseIcon />
-                </IconButton>
-            </Box>
+        <div className="fixed bottom-5 right-5 w-[360px] h-[520px] bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xl flex flex-col z-50 overflow-hidden font-sans text-left transition-colors duration-300">
+            {/* Chat Header */}
+            <div className="bg-slate-900 dark:bg-slate-950 px-4 py-3.5 flex justify-between items-center text-white shrink-0">
+                <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center font-bold text-sm tracking-tight text-white font-display uppercase">
+                        {recipientName?.charAt(0) || 'C'}
+                    </div>
+                    <div>
+                        <h4 className="text-sm font-bold truncate max-w-[200px]">{recipientName}</h4>
+                        <p className="text-[9px] font-bold text-accent-emerald uppercase tracking-wider">Online</p>
+                    </div>
+                </div>
+                <button 
+                    onClick={onClose} 
+                    className="p-1 rounded-lg hover:bg-white/10 text-white/80 hover:text-white transition-colors cursor-pointer"
+                >
+                    <X className="w-4 h-4" />
+                </button>
+            </div>
 
-            {/* Messages Area */}
-            <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 2, bgcolor: '#f5f5f5' }}>
-                <List>
-                    {messages.map((msg, index) => (
-                        <ListItem key={index} sx={{ flexDirection: 'column', alignItems: msg.senderId === user._id ? 'flex-end' : 'flex-start' }}>
-                            <Box
-                                sx={{
-                                    bgcolor: msg.senderId === user._id ? 'primary.light' : 'white',
-                                    color: msg.senderId === user._id ? 'white' : 'text.primary',
-                                    p: 1.5,
-                                    borderRadius: 2,
-                                    maxWidth: '80%',
-                                    boxShadow: 1
-                                }}
+            {/* Chat Messages Feed */}
+            <div className="flex-1 overflow-y-auto p-4 bg-slate-50/50 dark:bg-slate-950/20 space-y-4">
+                {messages.map((msg, index) => {
+                    const isMe = msg.senderId === user._id;
+                    return (
+                        <div 
+                            key={index} 
+                            className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
+                        >
+                            <div
+                                className={`p-3 rounded-2xl text-sm font-semibold max-w-[82%] shadow-sm ${
+                                    isMe 
+                                        ? 'bg-brand-indigo text-white rounded-tr-sm' 
+                                        : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-white border border-slate-200/50 dark:border-slate-850 rounded-tl-sm'
+                                }`}
                             >
-                                <Typography variant="body2">{msg.message}</Typography>
-                            </Box>
-                            <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
+                                <p className="leading-relaxed whitespace-pre-wrap">{msg.message}</p>
+                            </div>
+                            <span className="text-[9px] font-bold text-slate-400 dark:text-slate-550 mt-1 uppercase tracking-wider px-1">
                                 {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </Typography>
-                        </ListItem>
-                    ))}
-                    <div ref={messagesEndRef} />
-                </List>
-            </Box>
+                            </span>
+                        </div>
+                    );
+                })}
+                <div ref={messagesEndRef} />
+            </div>
 
-            <Divider />
-
-            {/* Input Area */}
-            <Box sx={{ p: 2, display: 'flex', gap: 1 }}>
-                <TextField
-                    fullWidth
-                    size="small"
+            {/* Input Bar Container */}
+            <div className="p-3.5 border-t border-slate-200/60 dark:border-slate-800/60 bg-white dark:bg-slate-900 flex items-center gap-2 shrink-0">
+                <input
+                    type="text"
                     placeholder="Type a message..."
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                    className="flex-1 px-3 py-2 border border-slate-200 dark:border-slate-800 focus:border-brand-indigo focus:ring-2 focus:ring-brand-indigo/10 rounded-xl text-sm bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 outline-none transition-all dark:text-white"
                 />
-                <IconButton color="primary" onClick={handleSend}>
-                    <SendIcon />
-                </IconButton>
-            </Box>
-        </Paper>
+                <button 
+                    onClick={handleSend}
+                    className="p-2 bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100 rounded-xl transition-colors cursor-pointer shrink-0"
+                >
+                    <Send className="w-4 h-4" />
+                </button>
+            </div>
+        </div>
     );
 };
 

@@ -1,19 +1,125 @@
-@import url('https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
-:root {
-  --font-display: 'Urbanist', sans-serif;
-  --breakpoint-3xl: 1920px;
-  --color-primary: #00A7F3;
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Satoshi', var(--font-sans);
+
+  /* Premium Design Theme Colors */
+  --color-brand-indigo: #4F46E5;
+  --color-brand-indigo-dark: #3730A3;
+  --color-accent-emerald: #10B981;
+  --color-accent-emerald-dark: #047857;
+  
+  /* Slate Scale */
+  --color-slate-50: #F8FAFC;
+  --color-slate-100: #F1F5F9;
+  --color-slate-200: #E2E8F0;
+  --color-slate-300: #CBD5E1;
+  --color-slate-400: #94A3B8;
+  --color-slate-500: #64748D;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1E293B;
+  --color-slate-900: #0F172A;
+  
+  /* Custom Premium Layout Colors */
+  --color-canvas-bg: #FAF9F6;       /* Premium warm off-white bg */
+  --color-canvas-card: #FFFFFF;     /* Solid white elevated cards */
+  --color-border-subtle: #F1F5F9;   /* Slate 100 split lines */
 }
 
-@layer base{
-  html{
-    font-family: var(--font-display);
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    color: var(--color-slate-900);
+    background-color: var(--color-canvas-bg);
+    -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
+  }
+  
+  html.dark {
+    color: var(--color-slate-100);
+    background-color: #0B0F19; /* Rich dark background */
+  }
+  
+  body {
+    background-color: var(--color-canvas-bg);
+    overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  .dark body {
+    background-color: #0B0F19;
   }
 
-  body{
-    background-color: #F7FAFE;
-    overflow-x: hidden;
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--color-slate-900);
+    letter-spacing: -0.02em;
   }
+  
+  .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+    color: var(--color-slate-50);
+  }
+  
+  /* Focus rings styling */
+  input:focus, select:focus, textarea:focus {
+    outline: 2px solid var(--color-brand-indigo);
+    outline-offset: 1px;
+  }
+}
+
+/* Premium Background Grid Pattern */
+.bg-grid-line {
+  background-size: 40px 40px;
+  background-image: linear-gradient(to right, rgba(15, 23, 42, 0.015) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(15, 23, 42, 0.015) 1px, transparent 1px);
+}
+
+.dark .bg-grid-line {
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.01) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(255, 255, 255, 0.01) 1px, transparent 1px);
+}
+
+/* Bespoke Shimmer Loading Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite linear;
+}
+
+.dark .animate-shimmer {
+  background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite linear;
+}
+
+/* AI Match Pulse Ring Animation */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 2.2s cubic-bezier(0.215, 0.610, 0.355, 1) infinite;
 }

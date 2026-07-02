@@ -42,38 +42,38 @@ const JobPostingForm = () => {
 
   return (
     <EmployerLayout>
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-8 border-b border-gray-100 flex justify-between items-center">
+      <div className="max-w-3xl mx-auto text-left transition-colors duration-300">
+        <div className="bg-canvas-card dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/80 shadow-sm overflow-hidden">
+          <div className="p-8 border-b border-slate-200/40 dark:border-slate-800/50 flex justify-between items-center bg-slate-50/20 dark:bg-slate-950/20">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Post a New Job</h2>
-              <p className="text-gray-500 mt-1">Fill out the form below to create your job posting</p>
+              <h2 className="text-xl font-extrabold text-slate-900 dark:text-white font-display">Post a New Job</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">Publish a new position to attract top candidate profiles.</p>
             </div>
-            <button className="px-4 py-2 border border-gray-200 rounded-lg text-gray-600 font-medium hover:bg-gray-50">
+            <button type="button" className="px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors shadow-sm">
               Preview
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-8 space-y-8">
+          <form onSubmit={handleSubmit} className="p-8 space-y-6">
             {error && (
-              <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm">
+              <div className="bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 text-red-650 p-4 rounded-xl text-sm font-semibold">
                 {error}
               </div>
             )}
 
             {/* Job Title */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Job Title *</label>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-350 mb-1.5">Job Title *</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Briefcase className="h-5 w-5 text-gray-400" />
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                  <Briefcase className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                 </div>
                 <input
                   type="text"
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-gray-50 focus:bg-white"
+                  className="block w-full pl-10 pr-3.5 py-3 border border-slate-200 dark:border-slate-800 rounded-xl leading-5 bg-white dark:bg-slate-950/40 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-550 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent text-sm transition-all"
                   placeholder="e.g. Senior Frontend Developer"
                   required
                 />
@@ -83,34 +83,34 @@ const JobPostingForm = () => {
             {/* Location & Salary */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-350 mb-1.5">Location *</label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <MapPin className="h-5 w-5 text-gray-400" />
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <MapPin className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                   </div>
                   <input
                     type="text"
                     name="location"
                     value={formData.location}
                     onChange={handleChange}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-gray-50 focus:bg-white"
+                    className="block w-full pl-10 pr-3.5 py-3 border border-slate-200 dark:border-slate-800 rounded-xl leading-5 bg-white dark:bg-slate-950/40 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-550 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent text-sm transition-all"
                     placeholder="e.g. New York, NY"
                     required
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Salary Range</label>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-355 mb-1.5">Salary Range</label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <DollarSign className="h-5 w-5 text-gray-400" />
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <DollarSign className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                   </div>
                   <input
                     type="text"
                     name="salary"
                     value={formData.salary}
                     onChange={handleChange}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-gray-50 focus:bg-white"
+                    className="block w-full pl-10 pr-3.5 py-3 border border-slate-200 dark:border-slate-800 rounded-xl leading-5 bg-white dark:bg-slate-950/40 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-550 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent text-sm transition-all"
                     placeholder="e.g. $100k - $120k"
                   />
                 </div>
@@ -120,77 +120,82 @@ const JobPostingForm = () => {
             {/* Category & Type */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Category *</label>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-350 mb-1.5">Category *</label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Layers className="h-5 w-5 text-gray-400" />
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <Layers className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                   </div>
                   <input
                     type="text"
                     name="category"
-                    value={formData.category} // Added category to state
+                    value={formData.category}
                     onChange={handleChange}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-gray-50 focus:bg-white"
-                    placeholder="Select a category"
+                    className="block w-full pl-10 pr-3.5 py-3 border border-slate-200 dark:border-slate-800 rounded-xl leading-5 bg-white dark:bg-slate-950/40 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-550 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent text-sm transition-all"
+                    placeholder="e.g. Technology, Design"
                     required
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Job Type *</label>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-350 mb-1.5">Job Type *</label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Briefcase className="h-5 w-5 text-gray-400" />
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <Briefcase className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                   </div>
                   <select
                     name="type"
                     value={formData.type}
                     onChange={handleChange}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-gray-50 focus:bg-white appearance-none"
+                    className="block w-full pl-10 pr-8 py-3 border border-slate-200 dark:border-slate-800 rounded-xl leading-5 bg-white dark:bg-slate-950/40 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent text-sm transition-all appearance-none cursor-pointer"
                   >
-                    <option value="Full-time">Full-time</option>
-                    <option value="Part-time">Part-time</option>
-                    <option value="Contract">Contract</option>
-                    <option value="Internship">Internship</option>
+                    <option value="Full-time" className="dark:bg-slate-900">Full-time</option>
+                    <option value="Part-time" className="dark:bg-slate-900">Part-time</option>
+                    <option value="Contract" className="dark:bg-slate-900">Contract</option>
+                    <option value="Internship" className="dark:bg-slate-900">Internship</option>
                   </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500 dark:text-slate-400">
+                    <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                      <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Job Description *</label>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-355 mb-1.5">Job Description *</label>
               <textarea
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
-                rows="6"
-                className="block w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-gray-50 focus:bg-white"
-                placeholder="Describe the role and responsibilities..."
+                rows="5"
+                className="block w-full p-4 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950/40 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-550 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent text-sm transition-all"
+                placeholder="Describe the responsibilities, project scope, and overall mission..."
                 required
               />
             </div>
 
             {/* Skills */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Requirements / Skills *</label>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-355 mb-1.5">Requirements / Skills *</label>
               <textarea
                 name="skillsRequired"
                 value={formData.skillsRequired}
                 onChange={handleChange}
-                rows="3"
-                className="block w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-gray-50 focus:bg-white"
-                placeholder="e.g. React, TypeScript, CSS (Comma separated)"
+                rows="2"
+                className="block w-full p-4 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950/40 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-550 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent text-sm transition-all"
+                placeholder="React, TypeScript, Tailwind CSS, API Integration (Comma separated)"
                 required
               />
             </div>
 
             {/* Submit Button */}
-            <div className="pt-4">
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-800/60 flex justify-end">
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-4 px-4 border border-transparent rounded-xl shadow-sm text-base font-bold text-white bg-slate-500 hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-all"
+                className="bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100 font-bold text-sm px-8 py-3.5 rounded-xl transition-all shadow-sm cursor-pointer disabled:opacity-70"
               >
                 {loading ? 'Publishing...' : 'Publish Job'}
               </button>
