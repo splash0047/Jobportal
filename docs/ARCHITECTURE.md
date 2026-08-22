@@ -1,76 +1,160 @@
-# 🏗️ System Architecture
+# 🏗️ System Architecture & Engineering Design
 
-## Overview
-The Job Portal uses a microservices-inspired architecture with a split-stack deployment strategy. This ensures scalability, separation of concerns, and optimized hosting costs.
+## 🌐 High-Level Topology
+
+WorkFlow AI is architected around decoupled layers: an Edge-served Single Page Application (SPA), a centralized API Gateway and WebSocket Engine, an asynchronous NLP microservice, and managed cloud persistence.
 
 ```mermaid
-graph TD
-    User[用户 (Candidate/Recruiter)]
-    Browser[Web Browser (React App)]
-    
-    subgraph Netlify
-        Frontend[Frontend Application]
+graph TB
+    subgraph CDN ["1. Edge Delivery (Netlify)"]
+        SPA["React 19 + Vite SPA<br/>(Tailwind CSS, Redux Toolkit)"]
     end
-    
-    subgraph Railway
-        Backend[Backend API (Node.js)]
-        AI[AI Service (Python)]
-        DB[(MongoDB Atlas)]
-        Cloud[Cloudinary]
+
+    subgraph Compute ["2. Core API Engine (Node.js Container)"]
+        Gateway["Express API Gateway"]
+        AuthMid["JWT Auth & RBAC Middleware"]
+        SocketServer["Socket.io Gateway (Real-Time Messages)"]
+        JobCtrl["Job & Matching Controller"]
+        ResumeCtrl["Resume Upload & Dispatcher"]
+        
+        Gateway --> AuthMid
+        AuthMid --> JobCtrl
+        AuthMid --> ResumeCtrl
     end
+
+    subgraph AIMicroservice ["3. AI Intelligence Service (Python FastAPI)"]
+        FastAPIApp["FastAPI Endpoint (/parse-resume)"]
+        Extractor["PDFMiner Binary Text Extractor"]
+        NER["Regex & Lexicon Entity Extractor"]
+        
+        FastAPIApp --> Extractor
+        Extractor --> NER
+    end
+
+    subgraph DataLayer ["4. Cloud Data & CDN Layer"]
+        Atlas[("MongoDB Atlas<br/>Users, Jobs, Applications, Messages")]
+        Cloudinary["Cloudinary CDN<br/>Resumes & Media Assets"]
+    end
+
+    %% Flow connections
+    SPA -->|REST HTTPS (Axios)| Gateway
+    SPA <-->|Bi-directional WebSockets| SocketServer
     
-    User -->|Interacts| Browser
-    Browser -->|HTTPS| Frontend
-    Browser -->|API Calls (Axios)| Backend
-    Browser -->|WebSockets| Backend
-    
-    Backend -->|Data Persistence| DB
-    Backend -->|File Storage| Cloud
-    Backend -->|Resume Parsing| AI
+    JobCtrl -->|Mongoose Queries| Atlas
+    ResumeCtrl -->|Internal POST /parse-resume| FastAPIApp
+    ResumeCtrl -->|Multipart Upload| Cloudinary
+    ResumeCtrl -->|Update Candidate Profile| Atlas
 ```
 
-## Components
+---
 
-### 1. Frontend (Client)
-- **Tech**: React 19, Vite, Tailwind CSS, Redux Toolkit.
-- **Responsibility**: UI rendering, state management, API integration, real-time chat interface.
-- **Hosting**: Netlify (high-performance CDN).
+## 🔄 Sequence Diagrams
 
-### 2. Backend (API Gateway & Core Logic)
-- **Tech**: Node.js, Express.js.
-- **Responsibility**: 
-    - Authentication (JWT).
-    - Job & Application management.
-    - Chat socket handling (Socket.io).
-    - Orchestrating requests between Database, Cloudinary, and AI Service.
-- **Hosting**: Railway (Node.js container).
+### 1. AI Resume Parsing & Automated Ingestion
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Candidate as Candidate (Browser)
+    participant API as Node.js Backend API
+    participant AI as FastAPI AI Service
+    participant Cloud as Cloudinary CDN
+    participant DB as MongoDB Atlas
 
-### 3. AI Service (Microservice)
-- **Tech**: Python 3.10, FastAPI, Spacy, PDFMiner.
-- **Responsibility**: 
-    - Parsing PDF/DOCX resumes.
-    - Extracting skills, experience, and education.
-    - Returning structured JSON data to the Backend.
-- **Hosting**: Railway (Python container).
+    Candidate->>API: POST /api/resume/upload (Multipart PDF)
+    Note over API: Auth Token Verified via JWT
+    API->>AI: Internal POST /parse-resume (Binary Buffer)
+    Note over AI: PDFMiner Text Extraction & Tokenization
+    AI-->>API: 200 OK (Extracted Skills, Contact, Raw Preview)
+    par Parallel Persistence
+        API->>Cloud: Upload PDF Document
+        Cloud-->>API: Return CDN Secure URL
+    and
+        API->>DB: Update User.profile (skills, resumeURL, matchScore)
+        DB-->>API: Record Updated
+    end
+    API-->>Candidate: 200 OK (JSON with Extracted Skills & Cloud URL)
+```
 
-## Data Flow: Resume Parsing
-1. **User** uploads a PDF/DOCX file on the Frontend.
-2. **Frontend** POSTs the file to Backend `/api/resume/upload`.
-3. **Backend** saves file temporarily and forwards it to **AI Service** (`/parse-resume`).
-4. **AI Service** extracts text, identifies entities (skills, name, email), and returns JSON.
-5. **Backend** uploads the original file to **Cloudinary** for permanent storage.
-6. **Backend** updates the User's profile in **MongoDB** with the analyzed data and file URL.
-7. **Frontend** receives the success response and updates the UI.
+### 2. Real-Time Bi-Directional Messaging
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Recruiter as Recruiter
+    participant Socket as Socket.io Server
+    participant DB as MongoDB Atlas
+    actor Candidate as Candidate
 
-## Database Schema (Simplified)
+    Recruiter->>Socket: emit('join_chat', { roomId })
+    Candidate->>Socket: emit('join_chat', { roomId })
+    Recruiter->>Socket: emit('send_message', { senderId, receiverId, text })
+    Socket->>DB: Save Message Document
+    Socket-->>Candidate: emit('receive_message', { messageObj })
+    Candidate->>Socket: emit('send_message', { replyText })
+    Socket->>DB: Save Message Document
+    Socket-->>Recruiter: emit('receive_message', { messageObj })
+```
 
-### User
-- `name`, `email`, `password` (hashed), `role` (candidate/recruiter)
-- `profile`: { `skills`, `experience`, `resumeURL` }
+---
 
-### Job
-- `title`, `description`, `company`, `location`, `salary`
-- `recruiterId` (ref User)
+## 🗄️ Database Schemas (Mongoose / MongoDB)
 
-### Application
-- `jobId`, `candidateId`, `status` (applied/viewed/accepted)
+### `User` Collection
+```typescript
+{
+  _id: ObjectId,
+  name: String,
+  email: String, // Unique, Indexed
+  password: String, // Bcrypt hash
+  role: "candidate" | "recruiter",
+  profile: {
+    skills: [String], // e.g. ["React", "Node.js", "Python"]
+    resumeUrl: String, // Cloudinary asset URL
+    experienceYears: Number,
+    phone: String
+  },
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+### `Job` Collection
+```typescript
+{
+  _id: ObjectId,
+  recruiterId: ObjectId, // Ref -> User
+  title: String,
+  company: String,
+  location: String,
+  type: "Full-Time" | "Part-Time" | "Contract" | "Remote",
+  salary: String,
+  description: String,
+  requiredSkills: [String],
+  applicationsCount: Number,
+  createdAt: Date
+}
+```
+
+### `Application` Collection
+```typescript
+{
+  _id: ObjectId,
+  jobId: ObjectId, // Ref -> Job
+  candidateId: ObjectId, // Ref -> User
+  resumeUrl: String,
+  status: "applied" | "reviewing" | "shortlisted" | "rejected",
+  appliedAt: Date
+}
+```
+
+### `Message` Collection
+```typescript
+{
+  _id: ObjectId,
+  chatRoomId: String,
+  sender: ObjectId, // Ref -> User
+  receiver: ObjectId, // Ref -> User
+  content: String,
+  read: Boolean,
+  createdAt: Date
+}
+```
