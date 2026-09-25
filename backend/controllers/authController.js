@@ -1,10 +1,30 @@
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
 const sendEmail = require('../utils/sendEmail');
-const getCurrentUser = (req, res) => res.json({
-    _id: req.user._id, name: req.user.name, email: req.user.email,
-    role: req.user.role, profile: req.user.profile, resumeURL: req.user.resumeURL
+const publicUser = user => ({
+    _id: user._id, name: user.name, email: user.email, role: user.role,
+    profile: user.profile, companyProfile: user.companyProfile,
+    hasResume: Boolean(user.resumeAsset?.publicId)
 });
+const getCurrentUser = (req, res) => res.json(publicUser(req.user));
+
+const updateProfile = async (req, res) => {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (user.role === 'candidate') {
+        if (!user.profile) user.profile = {};
+        user.profile.bio = req.body.bio;
+    } else {
+        user.companyProfile = {
+            name: req.body.name,
+            website: req.body.website || '',
+            description: req.body.description || '',
+            location: req.body.location || ''
+        };
+    }
+    await user.save();
+    return res.json(publicUser(user));
+};
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
@@ -45,13 +65,7 @@ const registerUser = async (req, res) => {
             // Don't fail the registration if email fails
         }
 
-        res.status(201).json({
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            token: generateToken(user._id),
-        });
+        res.status(201).json({ ...publicUser(user), token: generateToken(user._id) });
     } else {
         res.status(400).json({ message: 'Invalid user data' });
     }
@@ -66,16 +80,10 @@ const loginUser = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (user && (await user.matchPassword(password))) {
-        res.json({
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            token: generateToken(user._id),
-        });
+        res.json({ ...publicUser(user), token: generateToken(user._id) });
     } else {
         res.status(401).json({ message: 'Invalid email or password' });
     }
 };
 
-module.exports = { registerUser, loginUser, getCurrentUser };
+module.exports = { registerUser, loginUser, getCurrentUser, updateProfile };

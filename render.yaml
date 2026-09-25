@@ -4,7 +4,7 @@ services:
     name: job-portal-backend
     env: node
     plan: free
-    buildCommand: cd backend && npm install
+    buildCommand: cd backend && npm ci
     startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
@@ -27,6 +27,10 @@ services:
         sync: false
       - key: CLOUDINARY_API_SECRET
         sync: false
+      # This blueprint needs a runtime with ClamAV and updated signatures.
+      # A bare Node instance without the binary cannot accept production uploads.
+      - key: CLAMSCAN_COMMAND
+        sync: false
 
 
   # AI Service (Python)
@@ -38,6 +42,6 @@ services:
     startCommand: cd ai-service && uvicorn app.main:app --host 0.0.0.0 --port 10000
     envVars:
       - key: PYTHON_VERSION
-        value: 3.10.0
+        value: 3.12.0
       - key: AI_SERVICE_TOKEN
         sync: false

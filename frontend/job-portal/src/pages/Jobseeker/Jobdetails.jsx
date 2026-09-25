@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getJobById } from '../../redux/slices/jobSlice';
-import { applyForJob } from '../../redux/slices/applicationSlice';
+import { applyForJob, getMyApplications } from '../../redux/slices/applicationSlice';
 import JobSeekerLayout from './Components/JobSeekerLayout';
 import { MapPin, Briefcase, Calendar, DollarSign, CheckCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const JobDetails = () => {
   const { jobId } = useParams();
@@ -12,29 +13,30 @@ const JobDetails = () => {
   const navigate = useNavigate();
   const { job, loading, error } = useSelector((state) => state.jobs);
   const { user } = useSelector((state) => state.auth);
-  const { success } = useSelector((state) => state.applications);
-
-  const [isApplied, setIsApplied] = useState(false);
+  const { myApplications, loading: applying } = useSelector((state) => state.applications);
+  const isApplied = myApplications.some(app => String(app.jobId?._id || app.jobId) === jobId);
 
   useEffect(() => {
     dispatch(getJobById(jobId));
   }, [dispatch, jobId]);
 
   useEffect(() => {
-    if (success) setIsApplied(true);
-  }, [success]);
+    if (user?.role === 'candidate') dispatch(getMyApplications());
+  }, [dispatch, user?.role]);
 
-  const handleApply = () => {
+  const handleApply = async () => {
     if (!user) {
       navigate('/login');
       return;
     }
-    if (!user.resumeURL) {
+    if (user.role !== 'candidate') return toast.error('Only candidates can apply');
+    if (!user.hasResume) {
       alert('Please upload a resume in your profile first!');
       navigate('/profile');
       return;
     }
-    dispatch(applyForJob({ jobId }));
+    try { await dispatch(applyForJob({ jobId })).unwrap(); toast.success('Application submitted'); }
+    catch (error) { toast.error(error?.message || 'Could not apply'); }
   };
 
   if (loading) return (
@@ -88,13 +90,13 @@ const JobDetails = () => {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div className="flex items-center gap-5">
               <div className="w-14 h-14 bg-slate-50 dark:bg-slate-950 border border-slate-200/40 dark:border-slate-800/40 rounded-xl flex items-center justify-center text-xl font-bold text-slate-500 dark:text-slate-450 shrink-0">
-                {job.recruiterId?.company?.charAt(0) || <Briefcase className="w-6 h-6" />}
+                {job.recruiterId?.companyProfile?.name?.charAt(0) || <Briefcase className="w-6 h-6" />}
               </div>
               <div className="overflow-hidden">
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white font-display truncate">{job.title}</h1>
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-sm font-semibold text-slate-500 dark:text-slate-400">
                   <span className="flex items-center"><MapPin className="w-4 h-4 mr-1 text-slate-400 dark:text-slate-500" /> {job.location}</span>
-                  <span className="flex items-center"><Briefcase className="w-4 h-4 mr-1 text-slate-400 dark:text-slate-500" /> {job.recruiterId?.company || 'Confidential'}</span>
+                  <span className="flex items-center"><Briefcase className="w-4 h-4 mr-1 text-slate-400 dark:text-slate-500" /> {job.recruiterId?.companyProfile?.name || 'Confidential'}</span>
                 </div>
               </div>
             </div>
@@ -106,6 +108,7 @@ const JobDetails = () => {
             ) : (
               <button
                 onClick={handleApply}
+                disabled={applying}
                 className="bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100 px-8 py-3.5 rounded-xl font-bold text-sm transition-all shadow-sm cursor-pointer shrink-0"
               >
                 Apply Now
@@ -114,7 +117,7 @@ const JobDetails = () => {
           </div>
 
           <div className="flex flex-wrap gap-2.5 mt-8 pt-6 border-t border-slate-100 dark:border-slate-800/50">
-            <span className="bg-brand-indigo/5 dark:bg-brand-indigo/10 text-brand-indigo border border-brand-indigo/15 dark:border-brand-indigo/25 px-3 py-1 rounded-md text-xs font-semibold">{job.category || 'Engineering'}</span>
+            {job.category && <span className="bg-brand-indigo/5 dark:bg-brand-indigo/10 text-brand-indigo border border-brand-indigo/15 dark:border-brand-indigo/25 px-3 py-1 rounded-md text-xs font-semibold">{job.category}</span>}
             <span className="bg-accent-emerald/8 dark:bg-accent-emerald/10 text-accent-emerald-dark dark:text-accent-emerald border border-accent-emerald/15 px-3 py-1 rounded-md text-xs font-semibold">{job.type}</span>
             <span className="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border border-slate-200/40 dark:border-slate-800/40 px-3 py-1 rounded-md text-xs font-semibold flex items-center">
               <Calendar className="w-3.5 h-3.5 mr-1 text-slate-400 dark:text-slate-500" /> Posted {new Date(job.createdAt).toLocaleDateString()}

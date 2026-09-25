@@ -4,6 +4,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const connectDB = require('./config/db');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const User = require('./models/User');
 const Message = require('./models/Message');
 const canChat = require('./utils/chatAccess');
@@ -34,6 +35,9 @@ app.get('/', (req, res) => {
     res.send('API is running...');
 });
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
+app.get('/ready', (req, res) => res.status(mongoose.connection.readyState === 1 ? 200 : 503).json({
+    status: mongoose.connection.readyState === 1 ? 'ready' : 'database unavailable'
+}));
 app.use('/api/auth/login', rateLimit({ windowMs: 15 * 60 * 1000, limit: 20, standardHeaders: 'draft-7', legacyHeaders: false }));
 app.use('/api/auth/register', rateLimit({ windowMs: 15 * 60 * 1000, limit: 10, standardHeaders: 'draft-7', legacyHeaders: false }));
 
@@ -94,9 +98,19 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 5000;
 
-if (require.main === module) connectDB().then(() => {
+if (require.main === module) {
+    const required = ['MONGO_URI', 'JWT_SECRET', 'CLIENT_ORIGIN', 'CLOUDINARY_CLOUD_NAME',
+        'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'];
+    if (process.env.NODE_ENV === 'production') required.push('CLAMSCAN_COMMAND');
+    const missing = required.filter(key => !process.env[key] || process.env[key].startsWith('replace-with-'));
+    if (missing.length || (process.env.NODE_ENV === 'production' && process.env.JWT_SECRET.length < 32)) {
+        console.error(`Invalid server configuration: ${missing.join(', ') || 'JWT_SECRET must be at least 32 characters'}`);
+        process.exit(1);
+    }
+    connectDB().then(() => {
     server.listen(PORT, () => {
         console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
     });
-});
+    });
+}
 module.exports = { app, server, io };

@@ -2,6 +2,10 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import API from '../../services/api';
 
 // Async Thunks
+export const updateProfile = createAsyncThunk('auth/updateProfile', async (changes, { rejectWithValue }) => {
+    try { return (await API.patch('/auth/me', changes)).data; }
+    catch (error) { return rejectWithValue(error.response?.data || { message: 'Could not save profile' }); }
+});
 export const hydrateUser = createAsyncThunk('auth/hydrate', async (_, { rejectWithValue }) => {
     try {
         const { data } = await API.get('/auth/me');
@@ -51,6 +55,7 @@ const initialState = {
     hydrating: Boolean(localStorage.getItem('token')),
     error: null,
     resumeSuccess: false,
+    parsingAvailable: null,
 };
 
 const authSlice = createSlice({
@@ -61,17 +66,22 @@ const authSlice = createSlice({
             localStorage.removeItem('token');
             state.user = null;
             state.token = null;
+            state.hydrating = false;
         },
         resetResumeSuccess: (state) => {
             state.resumeSuccess = false;
+            state.parsingAvailable = null;
             state.error = null;
         }
     },
     extraReducers: (builder) => {
         builder
+            .addCase(updateProfile.fulfilled, (state, action) => {
+                if (state.token) state.user = { ...action.payload, token: state.token };
+            })
             .addCase(hydrateUser.fulfilled, (state, action) => {
                 state.hydrating = false;
-                if (!state.user) state.user = { ...action.payload, token: state.token };
+                if (state.token && !state.user) state.user = { ...action.payload, token: state.token };
             })
             .addCase(hydrateUser.rejected, (state) => {
                 if (state.user) { state.hydrating = false; return; }
@@ -119,9 +129,10 @@ const authSlice = createSlice({
             .addCase(uploadResume.fulfilled, (state, action) => {
                 state.loading = false;
                 state.resumeSuccess = true;
+                state.parsingAvailable = action.payload.parsingAvailable;
                 // Update user profile with new skills and resume URL
                 if (state.user) {
-                    state.user.resumeURL = action.payload.resumeURL;
+                    state.user.hasResume = action.payload.hasResume;
                     state.user.profile = action.payload.profile;
                 }
             })

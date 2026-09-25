@@ -1,5 +1,23 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import API from '../../services/api';
+import { logout } from './authSlice';
+
+export const getSavedJobs = createAsyncThunk('jobs/getSaved', async (_, { rejectWithValue }) => {
+    try { return (await API.get('/jobs/saved')).data; }
+    catch (error) { return rejectWithValue(error.response?.data || { message: 'Could not load saved jobs' }); }
+});
+export const saveJob = createAsyncThunk('jobs/save', async (id, { rejectWithValue }) => {
+    try { return (await API.put(`/jobs/${id}/save`)).data; }
+    catch (error) { return rejectWithValue(error.response?.data || { message: 'Could not save job' }); }
+});
+export const unsaveJob = createAsyncThunk('jobs/unsave', async (id, { rejectWithValue }) => {
+    try { await API.delete(`/jobs/${id}/save`); return id; }
+    catch (error) { return rejectWithValue(error.response?.data || { message: 'Could not remove saved job' }); }
+});
+export const getRecruiterStats = createAsyncThunk('jobs/stats', async (_, { rejectWithValue }) => {
+    try { return (await API.get('/jobs/stats')).data; }
+    catch (error) { return rejectWithValue(error.response?.data || { message: 'Could not load dashboard counts' }); }
+});
 
 // Create Job
 export const createJob = createAsyncThunk('jobs/create', async (jobData, { rejectWithValue }) => {
@@ -64,6 +82,9 @@ export const deleteJob = createAsyncThunk('jobs/delete', async (id, { rejectWith
 const initialState = {
     jobs: [],
     myJobs: [],
+    savedJobs: [],
+    savedLoading: false,
+    recruiterStats: null,
     job: null,
     loading: false,
     error: null,
@@ -82,6 +103,17 @@ const jobSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
+            .addCase(logout, state => { state.savedJobs = []; state.recruiterStats = null; state.myJobs = []; })
+            .addCase(getRecruiterStats.fulfilled, (state, action) => { state.recruiterStats = action.payload; })
+            .addCase(getSavedJobs.pending, state => { state.savedLoading = true; })
+            .addCase(getSavedJobs.fulfilled, (state, action) => { state.savedLoading = false; state.savedJobs = action.payload; })
+            .addCase(getSavedJobs.rejected, (state, action) => { state.savedLoading = false; state.error = action.payload?.message; })
+            .addCase(saveJob.fulfilled, (state, action) => {
+                if (!state.savedJobs.some(job => job._id === action.payload._id)) state.savedJobs.push(action.payload);
+            })
+            .addCase(unsaveJob.fulfilled, (state, action) => {
+                state.savedJobs = state.savedJobs.filter(job => job._id !== action.payload);
+            })
             // Create Job
             .addCase(createJob.pending, (state) => {
                 state.loading = true;

@@ -1,24 +1,18 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getMyJobs } from '../../redux/slices/jobSlice';
+import { getMyJobs, getRecruiterStats } from '../../redux/slices/jobSlice';
 import EmployerLayout from './components/EmployerLayout';
 import DashboardStats from './components/DashboardStats';
 import RecentActivity from './components/RecentActivity';
 
 const EmployerDashboard = () => {
   const dispatch = useDispatch();
-  const { myJobs } = useSelector((state) => state.jobs);
+  const { myJobs, recruiterStats } = useSelector((state) => state.jobs);
 
   useEffect(() => {
     dispatch(getMyJobs());
+    dispatch(getRecruiterStats());
   }, [dispatch]);
-
-  // Calculate stats
-  const stats = {
-    activeJobs: myJobs.length,
-    totalApplicants: myJobs.reduce((acc, job) => acc + (job.applicants ? job.applicants.length : 0), 0), // Assuming applicants array exists or we mock it
-    hired: 0 // Placeholder
-  };
 
   return (
     <EmployerLayout>
@@ -27,7 +21,7 @@ const EmployerDashboard = () => {
         <p className="text-gray-600">Here's what's happening with your jobs today.</p>
       </div>
 
-      <DashboardStats stats={stats} />
+      <DashboardStats stats={recruiterStats} />
       <RecentActivity jobs={myJobs} />
     </EmployerLayout>
   );

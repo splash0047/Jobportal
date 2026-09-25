@@ -6,6 +6,7 @@ const User = require('../models/User');
 const Job = require('../models/Job');
 const Application = require('../models/Application');
 const Message = require('../models/Message');
+const cloudinary = require('cloudinary').v2;
 
 process.env.JWT_SECRET = 'local-test-secret';
 process.env.CLIENT_ORIGIN = 'http://localhost:5173';
@@ -18,14 +19,16 @@ const job = '64f000000000000000000004';
 
 test('authenticated API and socket enforce ownership, identity and PDF validation', async () => {
     const originals = {
-        findById: User.findById, findOne: Job.findOne,
+        findById: User.findById, findOne: Job.findOne, applicationById: Application.findOne,
         jobById: Job.findById, appCreate: Application.create, appFindOne: Application.findOne,
-        exists: Application.exists, create: Message.create
+        appFind: Application.find,
+        exists: Application.exists, create: Message.create,
+        privateDownload: cloudinary.utils.private_download_url
     };
     const created = [];
     const clients = [];
     User.findById = id => ({ select: async () =>
-        [recruiter, candidate, stranger].includes(String(id)) ? { _id: String(id), role: id === candidate ? 'candidate' : 'recruiter', name: 'Test', resumeURL: 'https://example.org/uploaded.pdf' } : null
+        [recruiter, candidate, stranger].includes(String(id)) ? { _id: String(id), role: id === candidate ? 'candidate' : 'recruiter', name: 'Test', resumeAsset: id === candidate ? { publicId: 'resumes/test', resourceType: 'image' } : undefined } : null
     });
     Job.findOne = async () => null;
     Job.findById = async () => ({ _id: job, recruiterId: recruiter, skillsRequired: ['Python'] });
@@ -52,7 +55,15 @@ test('authenticated API and socket enforce ownership, identity and PDF validatio
         const me = await fetch(`${base}/api/auth/me`, {
             headers: { Authorization: `Bearer ${token(candidate)}` }
         });
-        assert.equal((await me.json())._id, candidate);
+        const meData = await me.json();
+        assert.equal(meData._id, candidate);
+        assert.equal(meData.hasResume, true);
+        assert.equal(meData.resumeURL, undefined);
+        const forbiddenResume = await fetch(`${base}/api/resume/mine`, { headers: { Authorization: `Bearer ${token(recruiter)}` } });
+        assert.equal(forbiddenResume.status, 403);
+        Application.findOne = async () => null;
+        const otherResume = await fetch(`${base}/api/resume/applications/${job}`, { headers: { Authorization: `Bearer ${token(recruiter)}` } });
+        assert.equal(otherResume.status, 404);
 
         const candidateJob = await fetch(`${base}/api/jobs`, {
             method: 'POST', headers: { Authorization: `Bearer ${token(candidate)}`, 'Content-Type': 'application/json' },
@@ -64,12 +75,64 @@ test('authenticated API and socket enforce ownership, identity and PDF validatio
             body: JSON.stringify({ jobId: job, resumeURL: 'https://attacker.example/forged.pdf' })
         });
         assert.equal(duplicate.status, 409);
+        cloudinary.utils.private_download_url = (publicId, format, options) => {
+            assert.equal(publicId, 'resumes/test');
+            assert.equal(format, 'pdf');
+            assert.equal(options.type, 'authenticated');
+            return 'https://api.cloudinary.com/signed-test-url';
+        };
+        const ownResume = await fetch(`${base}/api/resume/mine`, { headers: { Authorization: `Bearer ${token(candidate)}` } });
+        assert.equal(ownResume.status, 200);
+        assert.equal(ownResume.headers.get('cache-control'), 'no-store');
+        assert.equal((await ownResume.json()).url, 'https://api.cloudinary.com/signed-test-url');
+        Application.find = () => ({
+            populate() { return this; },
+            sort: async () => [{
+                resumeURL: 'https://example.org/legacy-public.pdf',
+                resumeAsset: { publicId: 'resumes/test', resourceType: 'image' },
+                toObject() { return { resumeURL: this.resumeURL, resumeAsset: this.resumeAsset, jobId: job }; }
+            }]
+        });
+        const ownApplications = await fetch(`${base}/api/applications/my`, { headers: { Authorization: `Bearer ${token(candidate)}` } });
+        assert.equal(ownApplications.status, 200);
+        assert.deepEqual((await ownApplications.json())[0], { jobId: job, hasResume: true });
+        Application.findOne = async filter => {
+            if (String(filter.recruiterId) !== recruiter) return null;
+            return { resumeAsset: { publicId: 'resumes/test', resourceType: 'image' } };
+        };
+        const recruiterResume = await fetch(`${base}/api/resume/applications/${job}`, { headers: { Authorization: `Bearer ${token(recruiter)}` } });
+        assert.equal(recruiterResume.status, 200);
+        const candidateApplication = await fetch(`${base}/api/resume/applications/${job}`, { headers: { Authorization: `Bearer ${token(candidate)}` } });
+        assert.equal(candidateApplication.status, 403);
 
         const invalidPdf = await fetch(`${base}/api/resume/upload`, {
             method: 'POST', headers: { Authorization: `Bearer ${token(candidate)}` },
             body: (() => { const form = new FormData(); form.append('resume', new Blob(['not a pdf'], { type: 'text/plain' }), 'resume.txt'); return form; })()
         });
         assert.equal(invalidPdf.status, 400);
+
+        const previousEnv = process.env.NODE_ENV;
+        const previousScanner = process.env.CLAMSCAN_COMMAND;
+        process.env.NODE_ENV = 'production';
+        delete process.env.CLAMSCAN_COMMAND;
+        try {
+            const unscanned = await fetch(`${base}/api/resume/upload`, {
+                method: 'POST', headers: { Authorization: `Bearer ${token(candidate)}` },
+                body: (() => { const form = new FormData(); form.append('resume', new Blob(['%PDF-1.4\n'], { type: 'application/pdf' }), 'resume.pdf'); return form; })()
+            });
+            assert.equal(unscanned.status, 503);
+            process.env.CLAMSCAN_COMMAND = '/bin/false';
+            const infected = await fetch(`${base}/api/resume/upload`, {
+                method: 'POST', headers: { Authorization: `Bearer ${token(candidate)}` },
+                body: (() => { const form = new FormData(); form.append('resume', new Blob(['%PDF-1.4\n'], { type: 'application/pdf' }), 'resume.pdf'); return form; })()
+            });
+            assert.equal(infected.status, 422);
+        } finally {
+            if (previousEnv === undefined) delete process.env.NODE_ENV;
+            else process.env.NODE_ENV = previousEnv;
+            if (previousScanner === undefined) delete process.env.CLAMSCAN_COMMAND;
+            else process.env.CLAMSCAN_COMMAND = previousScanner;
+        }
 
         const openSocket = auth => connect(base, { transports: ['websocket'], reconnection: false, auth });
         const unauthenticated = openSocket({}); clients.push(unauthenticated);
@@ -96,7 +159,9 @@ test('authenticated API and socket enforce ownership, identity and PDF validatio
         Job.findById = originals.jobById;
         Application.create = originals.appCreate;
         Application.findOne = originals.appFindOne;
+        Application.find = originals.appFind;
         Application.exists = originals.exists;
         Message.create = originals.create;
+        cloudinary.utils.private_download_url = originals.privateDownload;
     }
 });

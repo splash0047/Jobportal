@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getJobs } from '../../redux/slices/jobSlice';
+import { getJobs, getSavedJobs } from '../../redux/slices/jobSlice';
 import JobSeekerLayout from './Components/JobSeekerLayout';
 import JobFilters from './Components/JobFilters';
 import JobCard from './Components/JobCard';
@@ -9,18 +9,25 @@ import { Search, MapPin } from 'lucide-react';
 const JobSeekerDashboard = () => {
   const dispatch = useDispatch();
   const { jobs, loading } = useSelector((state) => state.jobs);
+  const { user } = useSelector((state) => state.auth);
   const [searchTerm, setSearchTerm] = useState('');
   const [locationSearch, setLocationSearch] = useState('');
+  const [selectedTypes, setSelectedTypes] = useState([]);
 
   useEffect(() => {
     dispatch(getJobs());
   }, [dispatch]);
+  useEffect(() => {
+    if (user?.role === 'candidate') dispatch(getSavedJobs());
+  }, [dispatch, user?.role]);
 
   const filteredJobs = jobs.filter(job => {
-    const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          job.recruiterId?.company?.toLowerCase().includes(searchTerm.toLowerCase());
+    const term = searchTerm.toLowerCase();
+    const matchesSearch = job.title.toLowerCase().includes(term) ||
+                          job.recruiterId?.companyProfile?.name?.toLowerCase().includes(term) ||
+                          job.skillsRequired?.some(skill => skill.toLowerCase().includes(term));
     const matchesLocation = job.location.toLowerCase().includes(locationSearch.toLowerCase());
-    return matchesSearch && matchesLocation;
+    return matchesSearch && matchesLocation && (!selectedTypes.length || selectedTypes.includes(job.type));
   });
 
   return (
@@ -30,7 +37,7 @@ const JobSeekerDashboard = () => {
         <div className="bg-canvas-card dark:bg-slate-900 rounded-2xl p-8 sm:p-10 border border-slate-200/60 dark:border-slate-800/80 shadow-sm relative overflow-hidden text-left bg-grid-line transition-colors duration-300">
           <div className="max-w-2xl relative z-10 space-y-2">
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white font-display">Discover Opportunities</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 font-semibold pb-6">Explore verified positions from outstanding startup and enterprise teams.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 font-semibold pb-6">Browse positions shared by recruiters.</p>
           </div>
 
           {/* Search Inputs Capsule */}
@@ -59,9 +66,6 @@ const JobSeekerDashboard = () => {
               />
             </div>
 
-            <button className="bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100 text-sm font-bold px-8 py-3.5 rounded-xl transition-colors shadow-sm cursor-pointer whitespace-nowrap">
-              Search
-            </button>
           </div>
         </div>
       </div>
@@ -71,7 +75,7 @@ const JobSeekerDashboard = () => {
         {/* Filters Sidebar */}
         <div className="w-full lg:w-1/4">
           <div className="sticky top-24">
-            <JobFilters />
+            <JobFilters selectedTypes={selectedTypes} onChange={setSelectedTypes} />
           </div>
         </div>
 

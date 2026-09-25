@@ -2,6 +2,9 @@ const User = require('../models/User');
 const cloudinary = require('cloudinary').v2;
 const fs = require('fs');
 const axios = require('axios');
+const mongoose = require('mongoose');
+const Application = require('../models/Application');
+const scanPdf = require('../utils/scanPdf');
 
 // Configure Cloudinary
 cloudinary.config({
@@ -25,13 +28,15 @@ const uploadResume = async (req, res) => {
         const handle = await fs.promises.open(filePath, 'r');
         try { await handle.read(signature, 0, 5, 0); } finally { await handle.close(); }
         if (signature.toString() !== '%PDF-') return res.status(400).json({ message: 'Invalid PDF file' });
+        await scanPdf(filePath);
 
         const user = await User.findById(req.user._id);
         if (!user) return res.status(404).json({ message: 'User not found' });
 
-        // Save the PDF even if extraction is temporarily unavailable.
+        // The original and derived assets require authorization at Cloudinary.
         const cloudinaryResponse = await cloudinary.uploader.upload(filePath, {
-            resource_type: 'auto',
+            resource_type: 'image',
+            type: 'authenticated',
             folder: 'resumes'
         });
         let parsedData = null;
@@ -48,7 +53,8 @@ const uploadResume = async (req, res) => {
                 parsedData = aiResponse.data.parsed_data;
             } catch (error) { console.warn('Resume extraction unavailable:', error.message); }
         }
-        user.resumeURL = cloudinaryResponse.secure_url;
+        user.resumeAsset = { publicId: cloudinaryResponse.public_id, resourceType: cloudinaryResponse.resource_type };
+        user.resumeURL = undefined;
         if (parsedData) user.profile = {
             ...user.profile,
             skills: Array.from(new Set([...(user.profile?.skills || []), ...(parsedData.skills || [])]))
@@ -56,16 +62,36 @@ const uploadResume = async (req, res) => {
         const updatedUser = await user.save();
         return res.json({
             message: parsedData ? 'Resume processed successfully' : 'Resume saved; automatic skill extraction unavailable',
-            resumeURL: updatedUser.resumeURL, fileParams: parsedData,
+            hasResume: true, fileParams: parsedData,
             profile: updatedUser.profile, parsingAvailable: Boolean(parsedData)
         });
 
     } catch (error) {
         console.error('Resume Processing Error:', error.message);
-        return res.status(500).json({ message: 'Resume upload failed' });
+        return res.status(error.status || 500).json({ message: error.status ? error.message : 'Resume upload failed' });
     } finally {
         await fs.promises.unlink(filePath).catch(() => {});
     }
 };
 
-module.exports = { uploadResume };
+const signedResume = (req, res, asset) => {
+    if (!asset?.publicId || !['image', 'raw'].includes(asset.resourceType)) {
+        return res.status(404).json({ message: 'A private resume is not available; upload a new PDF' });
+    }
+    const expiresAt = Math.floor(Date.now() / 1000) + 300;
+    const url = cloudinary.utils.private_download_url(asset.publicId, 'pdf', {
+        resource_type: asset.resourceType, type: 'authenticated', expires_at: expiresAt
+    });
+    res.set('Cache-Control', 'no-store').json({ url, expiresAt });
+};
+
+const getMyResume = (req, res) => signedResume(req, res, req.user.resumeAsset);
+
+const getApplicationResume = async (req, res) => {
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ message: 'Invalid application ID' });
+    const application = await Application.findOne({ _id: req.params.id, recruiterId: req.user._id });
+    if (!application) return res.status(404).json({ message: 'Application not found' });
+    return signedResume(req, res, application.resumeAsset);
+};
+
+module.exports = { uploadResume, getMyResume, getApplicationResume };
