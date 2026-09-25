@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, PlusCircle, Briefcase, Building2, LogOut, Menu, X, Bell, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, Briefcase, Building2, LogOut, Menu, X, Sun, Moon } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../../redux/slices/authSlice';
 
@@ -124,10 +124,6 @@ const EmployerLayout = ({ children }) => {
 
                         <div className="h-6 w-px bg-slate-200 dark:bg-slate-850 mx-2"></div>
 
-                        <button className="p-2 text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 transition-colors relative">
-                            <Bell className="w-5 h-5" />
-                            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-accent-emerald rounded-full"></span>
-                        </button>
                     </div>
                 </header>
 

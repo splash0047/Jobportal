@@ -6,7 +6,7 @@ const {
     getMyJobs,
     getJobById,
     deleteJob,
-    getRecommendedJobs
+    getRecommendedJobs, getSavedJobs, saveJob, unsaveJob, getRecruiterStats
 } = require('../controllers/jobController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 const { body, param } = require('express-validator');
@@ -18,6 +18,10 @@ router.route('/')
     .post(protect, authorize('recruiter'), [body('title').isString().trim().isLength({ min: 2, max: 150 }), body('description').isString().trim().isLength({ min: 10, max: 10000 }), body('location').isString().trim().notEmpty(), body('skillsRequired').isArray({ min: 1 }), body('skillsRequired.*').isString().trim().notEmpty(), body('type').optional().isIn(['Full-time', 'Part-time', 'Contract', 'Internship']), validate], handle(createJob));
 
 router.get('/recommended', protect, authorize('candidate'), handle(getRecommendedJobs));
+router.get('/saved', protect, authorize('candidate'), handle(getSavedJobs));
+router.get('/stats', protect, authorize('recruiter'), handle(getRecruiterStats));
+router.put('/:id/save', protect, authorize('candidate'), [param('id').isMongoId(), validate], handle(saveJob));
+router.delete('/:id/save', protect, authorize('candidate'), [param('id').isMongoId(), validate], handle(unsaveJob));
 
 router.route('/myjobs')
     .get(protect, authorize('recruiter'), handle(getMyJobs));

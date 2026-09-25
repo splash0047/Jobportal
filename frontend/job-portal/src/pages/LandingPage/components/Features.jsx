@@ -6,25 +6,25 @@ const Features = () => {
         seekers: [
             {
                 icon: <Search className="w-5 h-5 text-brand-indigo" />,
-                title: "Smart Job Matching",
-                desc: "Our intelligent search matches your profile details directly to the perfect roles."
+                title: "Skill Overlap Recommendations",
+                desc: "See jobs that share skills with your profile, ranked by exact skill overlap."
             },
             {
                 icon: <FileText className="w-5 h-5 text-brand-indigo" />,
-                title: "AI Skill Extraction",
-                desc: "Upload a PDF resume to instantly extract and highlight your technical capabilities."
+                title: "PDF Skill Extraction",
+                desc: "Upload a PDF and recognize contact information and known skills with text rules."
             },
             {
                 icon: <MessageSquare className="w-5 h-5 text-brand-indigo" />,
                 title: "Direct Connect",
-                desc: "Instant real-time chat with hiring recruiters once your application is shortlisted."
+                desc: "Message a recruiter for a job you applied to."
             }
         ],
         employers: [
             {
                 icon: <Users className="w-5 h-5 text-slate-700 dark:text-slate-300" />,
-                title: "Pre-screened Profiles",
-                desc: "Access a structured talent pool with pre-extracted skills and matching scores."
+                title: "Applicant Profiles",
+                desc: "Review applicants for your jobs, their skills, and basic overlap scores."
             },
             {
                 icon: <BarChart2 className="w-5 h-5 text-slate-700 dark:text-slate-300" />,
@@ -33,8 +33,8 @@ const Features = () => {
             },
             {
                 icon: <Shield className="w-5 h-5 text-slate-700 dark:text-slate-300" />,
-                title: "Authentic Verification",
-                desc: "Interact with verified candidates who have uploaded verified resumes."
+                title: "Application-Based Chat",
+                desc: "Chat with candidates who applied to your jobs."
             }
         ]
     };

@@ -7,10 +7,14 @@ Base URL: `http://localhost:5000/api`. Send `Authorization: Bearer <JWT>` on pro
 | POST | `/auth/register` | Public | `name`, `email`, `password` (8–128 characters), `role` (`candidate` or `recruiter`); rate limited |
 | POST | `/auth/login` | Public | `email`, `password`; returns `_id`, `name`, `email`, `role`, `token`; rate limited |
 | GET | `/auth/me` | JWT | Returns current user without password |
+| PATCH | `/auth/me` | JWT | Candidate `bio`, or recruiter `name`, `website`, `description`, `location` |
 | GET | `/jobs` | Public | Array of jobs; optional `q` (title), `location`, `skill` filters |
 | GET | `/jobs/:id` | Public | One job |
 | GET | `/jobs/recommended` | Candidate | Ranked by case-insensitive skill overlap |
 | GET | `/jobs/myjobs` | Recruiter | Jobs created by this recruiter |
+| GET | `/jobs/stats` | Recruiter | Live counts of jobs, applicants and shortlisted applicants |
+| GET | `/jobs/saved` | Candidate | Saved job list |
+| PUT/DELETE | `/jobs/:id/save` | Candidate | Save/remove a job |
 | POST | `/jobs` | Recruiter | `title`, `description`, `location`, nonempty `skillsRequired`; optional `salary`, `type` |
 | DELETE | `/jobs/:id` | Job owner | Removes the job |
 | POST | `/applications` | Candidate | `jobId`; uses the candidate's stored resume URL; duplicate `(jobId, candidateId)` rejected |

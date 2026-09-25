@@ -101,13 +101,10 @@ const Login = () => {
                         </div>
 
                         <div>
-                            <div className="flex justify-between items-center mb-1.5">
+                            <div className="mb-1.5">
                                 <label htmlFor="password" className="block text-sm font-semibold text-slate-700">
                                     Password
                                 </label>
-                                <a href="#" className="text-xs font-semibold text-brand-indigo hover:text-brand-indigo-dark transition-colors">
-                                    Forgot password?
-                                </a>
                             </div>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">

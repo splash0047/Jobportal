@@ -6,7 +6,7 @@ import { UploadCloud, FileText, CheckCircle, X, Loader2 } from 'lucide-react';
 const ResumeUpload = () => {
     const [file, setFile] = useState(null);
     const dispatch = useDispatch();
-    const { loading, error, resumeSuccess, user } = useSelector((state) => state.auth);
+    const { loading, error, resumeSuccess, parsingAvailable, user } = useSelector((state) => state.auth);
 
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
@@ -24,7 +24,7 @@ const ResumeUpload = () => {
 
     return (
         <div className="bg-canvas-card dark:bg-slate-900 rounded-2xl p-6 border border-slate-200/60 dark:border-slate-800/80 shadow-sm text-left transition-colors duration-300">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white font-display mb-1">Resume & AI Skills Matching</h3>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white font-display mb-1">Resume & Skills Matching</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mb-6">Upload your PDF resume to automatically extract skills and match opportunities.</p>
 
             <div className="border border-dashed border-slate-200 dark:border-slate-800 hover:border-brand-indigo/60 dark:hover:border-brand-indigo/60 hover:bg-brand-indigo/2 dark:hover:bg-brand-indigo/5 rounded-xl p-8 text-center transition-all bg-slate-50/50 dark:bg-slate-950/40">
@@ -42,7 +42,7 @@ const ResumeUpload = () => {
                             <div className="h-1 bg-slate-300 dark:bg-slate-600 rounded w-2/3 mb-1 animate-shimmer"></div>
                             <div className="h-1 bg-slate-300 dark:bg-slate-600 rounded w-1/2 animate-shimmer"></div>
                         </div>
-                        <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider animate-pulse">AI is parsing your credentials...</span>
+                        <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider animate-pulse">Uploading and checking your PDF...</span>
                     </div>
                 ) : !file && !user?.resumeURL ? (
                     <label htmlFor="resume-upload" className="cursor-pointer flex flex-col items-center">
@@ -82,7 +82,7 @@ const ResumeUpload = () => {
                         onClick={handleUpload}
                         className="bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100 text-xs font-bold px-4 py-2.5 rounded-lg transition-colors cursor-pointer"
                     >
-                        Analyze Resume
+                        Upload Resume
                     </button>
                 </div>
             )}
@@ -96,7 +96,7 @@ const ResumeUpload = () => {
             {(resumeSuccess || (user?.profile?.skills && user.profile.skills.length > 0)) && !loading && (
                 <div className="mt-6 border-t border-slate-100 dark:border-slate-800/60 pt-6">
                     <div className="flex items-center text-accent-emerald-dark dark:text-accent-emerald text-xs font-bold uppercase tracking-wider mb-4">
-                        <CheckCircle className="w-4 h-4 mr-2 text-accent-emerald" /> AI Profile Analysis Complete
+                        <CheckCircle className="w-4 h-4 mr-2 text-accent-emerald" /> {resumeSuccess && parsingAvailable === false ? 'Resume saved; skill extraction unavailable' : 'Recognized profile skills'}
                     </div>
 
                     {user?.profile?.skills && (

@@ -2,22 +2,16 @@ import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import JobSeekerLayout from './Components/JobSeekerLayout';
 import JobCard from './Components/JobCard';
-import { getJobs } from '../../redux/slices/jobSlice';
+import { getSavedJobs } from '../../redux/slices/jobSlice';
 import { Bookmark } from 'lucide-react';
 
 const SavedJobs = () => {
   const dispatch = useDispatch();
-  const { jobs, loading } = useSelector((state) => state.jobs);
-
-  // In a real app, you would fetch saved jobs from an endpoint.
-  // Here, I'll simulate it by just taking the first 3 jobs as "saved" for demo purposes,
-  // or we could add a `saved` field to local state. 
-  // For now, let's just show a few random jobs or a "No saved jobs" message if empty.
-  const savedJobs = jobs.slice(0, 3); // Simulating saved jobs
+  const { savedJobs, savedLoading } = useSelector((state) => state.jobs);
 
   useEffect(() => {
-    if (jobs.length === 0) dispatch(getJobs());
-  }, [dispatch, jobs]);
+    dispatch(getSavedJobs());
+  }, [dispatch]);
 
   return (
     <JobSeekerLayout>
@@ -31,7 +25,7 @@ const SavedJobs = () => {
         </div>
       </div>
 
-      {loading ? (
+      {savedLoading ? (
         <div className="flex justify-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>

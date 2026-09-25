@@ -11,7 +11,7 @@ const Hero = () => {
                 {/* Left Content */}
                 <div className="lg:col-span-7 space-y-8">
                     <div className="inline-flex items-center space-x-2 bg-brand-indigo/10 dark:bg-brand-indigo/15 text-brand-indigo dark:text-brand-indigo-light px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase">
-                        <span>New: AI Resume Analysis v2.0</span>
+                        <span>PDF resume skill extraction</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                     </div>
 
@@ -21,7 +21,7 @@ const Hero = () => {
                     </h1>
 
                     <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-450 max-w-xl leading-relaxed font-medium">
-                        Connect with top-tier companies. Upload your resume for instant AI skill insights and get matched with role opportunities tailored for your growth.
+                        Browse jobs shared by recruiters, upload a PDF resume to recognize known skills, and follow your applications in one place.
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4 pt-2">
@@ -36,23 +36,10 @@ const Hero = () => {
                             onClick={() => navigate('/login')}
                             className="px-8 py-4 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 dark:bg-slate-900/50 dark:text-slate-350 dark:border-slate-800 dark:hover:bg-slate-800/80 rounded-xl font-bold text-base transition-all flex items-center justify-center cursor-pointer"
                         >
-                            Post a Job Post
+                            Post a Job
                         </button>
                     </div>
 
-                    {/* Trust Indicators */}
-                    <div className="pt-8 border-t border-slate-200/50 dark:border-slate-800/50">
-                        <p className="text-xs font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider mb-4">
-                            Trusted by leading tech platforms
-                        </p>
-                        <div className="flex flex-wrap items-center gap-x-8 gap-y-4 opacity-40 dark:opacity-60">
-                            <span className="font-bold text-lg text-slate-900 dark:text-white tracking-tight font-display">Stripe</span>
-                            <span className="font-bold text-lg text-slate-900 dark:text-white tracking-tight font-display">Linear</span>
-                            <span className="font-bold text-lg text-slate-900 dark:text-white tracking-tight font-display">Vercel</span>
-                            <span className="font-bold text-lg text-slate-900 dark:text-white tracking-tight font-display">Notion</span>
-                            <span className="font-bold text-lg text-slate-900 dark:text-white tracking-tight font-display">Airbnb</span>
-                        </div>
-                    </div>
                 </div>
 
                 {/* Right Content - Sleek Image & Ambient Glow */}

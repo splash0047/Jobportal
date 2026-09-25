@@ -35,7 +35,7 @@ const ApplicationsViewer = () => {
         <EmployerLayout>
             <div className="mb-8 text-left transition-colors duration-300">
                 <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white font-display">Applications Received</h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Review candidates, check AI matching scores, shortlist, and start chats.</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Review candidates, check skill overlap scores, shortlist, and start chats.</p>
             </div>
 
             {/* Accordion List */}
@@ -78,7 +78,7 @@ const ApplicationsViewer = () => {
                                                     <tr className="bg-slate-50 dark:bg-slate-950/45 border-b border-slate-200/40 dark:border-slate-800/50 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                                                         <th className="px-6 py-4 text-left">Candidate</th>
                                                         <th className="px-6 py-4 text-left">Resume Skills</th>
-                                                        <th className="px-6 py-4 text-left">AI Match</th>
+                                                        <th className="px-6 py-4 text-left">Skill Match</th>
                                                         <th className="px-6 py-4 text-left">Status</th>
                                                         <th className="px-6 py-4 text-right">Actions</th>
                                                     </tr>

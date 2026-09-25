@@ -1,8 +1,24 @@
 import { useNavigate } from 'react-router-dom';
 import { Bookmark, MapPin, Clock, Calendar, Briefcase } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { saveJob, unsaveJob } from '../../../redux/slices/jobSlice';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 const JobCard = ({ job }) => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const { user } = useSelector(state => state.auth);
+    const isSaved = useSelector(state => state.jobs.savedJobs.some(saved => saved._id === job._id));
+    const [saving, setSaving] = useState(false);
+    const toggleSaved = async () => {
+        if (!user) return navigate('/login');
+        if (user.role !== 'candidate' || saving) return;
+        setSaving(true);
+        try { await dispatch(isSaved ? unsaveJob(job._id) : saveJob(job._id)).unwrap(); }
+        catch (error) { toast.error(error?.message || 'Could not update saved jobs'); }
+        finally { setSaving(false); }
+    };
     const postedDate = new Date(job.createdAt).toLocaleDateString(undefined, {
         month: 'short',
         day: 'numeric',
@@ -17,20 +33,22 @@ const JobCard = ({ job }) => {
                     <div className="flex items-center">
                         {/* Company Logo Placeholder */}
                         <div className="w-10 h-10 bg-slate-50 dark:bg-slate-950 border border-slate-200/40 dark:border-slate-800/40 rounded-xl flex items-center justify-center text-sm font-bold text-slate-500 dark:text-slate-400 group-hover:bg-brand-indigo/5 dark:group-hover:bg-brand-indigo/10 group-hover:text-brand-indigo transition-colors shrink-0">
-                            {job.recruiterId?.company?.charAt(0) || <Briefcase className="w-5 h-5" />}
+                            {job.recruiterId?.companyProfile?.name?.charAt(0) || <Briefcase className="w-5 h-5" />}
                         </div>
                         <div className="ml-3.5 overflow-hidden">
                             <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-brand-indigo dark:group-hover:text-brand-indigo transition-colors truncate">
                                 {job.title}
                             </h3>
                             <p className="text-xs font-bold text-slate-400 dark:text-slate-500 truncate">
-                                {job.recruiterId?.company || 'Company Confidential'}
+                                {job.recruiterId?.companyProfile?.name || 'Company Confidential'}
                             </p>
                         </div>
                     </div>
-                    <button className="text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400 transition-colors p-1 shrink-0">
-                        <Bookmark className="w-5 h-5" />
-                    </button>
+                    {(!user || user.role === 'candidate') && <button type="button" onClick={toggleSaved} disabled={saving}
+                        aria-label={isSaved ? 'Remove saved job' : 'Save job'} title={isSaved ? 'Remove saved job' : 'Save job'}
+                        className={`transition-colors p-1 shrink-0 ${isSaved ? 'text-brand-indigo' : 'text-slate-400 hover:text-brand-indigo'}`}>
+                        <Bookmark className="w-5 h-5" fill={isSaved ? 'currentColor' : 'none'} />
+                    </button>}
                 </div>
 
                 {/* Organization Details Tags */}

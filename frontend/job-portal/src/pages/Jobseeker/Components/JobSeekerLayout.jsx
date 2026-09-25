@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Briefcase, Bell, User, LogOut, Menu, X, ChevronDown, Sun, Moon } from 'lucide-react';
+import { Briefcase, User, LogOut, Menu, X, ChevronDown, Sun, Moon } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../../redux/slices/authSlice';
 
@@ -76,11 +76,6 @@ const JobSeekerLayout = ({ children }) => {
                             </button>
 
                             <div className="h-6 w-px bg-slate-200 dark:bg-slate-800"></div>
-
-                            <button className="text-slate-400 hover:text-slate-650 dark:text-slate-400 dark:hover:text-slate-250 transition-colors relative p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                                <Bell className="w-5 h-5" />
-                                <span className="absolute top-1.5 right-1.5 block h-2 w-2 rounded-full ring-2 ring-white dark:ring-[#0E1322] bg-accent-emerald"></span>
-                            </button>
 
                             {/* User Profile Trigger */}
                             <div className="relative">

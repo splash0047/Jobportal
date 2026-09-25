@@ -4,8 +4,8 @@ A full-stack candidate and recruiter project built with React, Redux Toolkit, Ex
 
 ## What the code does
 
-- Candidates register, upload PDF resumes (5 MB maximum), browse jobs, apply, and receive job recommendations based on case-insensitive overlap between profile skills and job requirements.
-- Recruiters post jobs, view applications for jobs they own, shortlist or reject applicants, and message those applicants. The API and socket server check application membership before showing or sending chat messages.
+- Candidates register, upload PDF resumes (5 MB maximum), browse and save jobs, apply, and receive job recommendations based on case-insensitive overlap between profile skills and job requirements.
+- Recruiters post jobs, save company profile details, view applications for jobs they own, shortlist or reject applicants, and message those applicants. The API and socket server check application membership before showing or sending chat messages.
 - Resume extraction uses PDFMiner for text, regular expressions for email and phone, and a fixed dictionary for skills. This is basic extraction, not an ML model or semantic ranking system. If extraction is unavailable, the PDF can still be stored in Cloudinary and the response reports `parsingAvailable: false`.
 - The frontend stores its JWT in localStorage and refreshes its user profile through `GET /api/auth/me` after page reload. This storage method has XSS exposure; cookie-based session handling would be a further improvement.
 
@@ -35,8 +35,11 @@ Do not commit real credentials. A previous commit contained `backend/.env`; remo
 | --- | --- | --- |
 | `POST /api/auth/register`, `/login` | Public, rate limited | User fields and JWT |
 | `GET /api/auth/me` | Bearer JWT | Current user without password |
+| `PATCH /api/auth/me` | Bearer JWT | Save candidate bio or recruiter company profile |
 | `GET /api/jobs` | Public | Job array; optional `q` (title), `skill`, `location` filters |
 | `GET /api/jobs/recommended` | Candidate | Jobs ranked by skill overlap |
+| `GET /api/jobs/saved` | Candidate | Saved job list |
+| `PUT/DELETE /api/jobs/:id/save` | Candidate | Save or remove a job |
 | `POST /api/jobs` | Recruiter | Create a job |
 | `POST /api/applications` | Candidate | Create an application; unique per candidate and job |
 | `GET /api/applications/job/:jobId` | Job owner | Applicants for owned job |

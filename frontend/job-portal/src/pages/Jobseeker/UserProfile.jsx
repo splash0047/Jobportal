@@ -1,10 +1,23 @@
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import { updateProfile } from '../../redux/slices/authSlice';
 import JobSeekerLayout from './Components/JobSeekerLayout';
 import ResumeUpload from './ResumeUpload';
 import { User, Mail, Save } from 'lucide-react';
 
 const UserProfile = () => {
   const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const [bio, setBio] = useState('');
+  const [saving, setSaving] = useState(false);
+  useEffect(() => { setBio(user?.profile?.bio || ''); }, [user?.profile?.bio]);
+  const saveBio = async () => {
+    setSaving(true);
+    try { await dispatch(updateProfile({ bio })).unwrap(); toast.success('Profile saved'); }
+    catch (error) { toast.error(error?.message || 'Could not save profile'); }
+    finally { setSaving(false); }
+  };
 
   return (
     <JobSeekerLayout>
@@ -24,11 +37,6 @@ const UserProfile = () => {
                 {user?.name?.charAt(0) || <User />}
               </div>
             </div>
-            <div className="mt-4 md:mt-0 md:ml-4 mb-2">
-              <button className="bg-white border border-slate-200 text-slate-700 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-300 px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 shadow-sm transition-colors cursor-pointer">
-                Change Avatar
-              </button>
-            </div>
           </div>
 
           <div className="space-y-8">
@@ -42,7 +50,7 @@ const UserProfile = () => {
                   </div>
                   <input
                     type="text"
-                    defaultValue={user?.name}
+                    value={user?.name || ''}
                     className="block w-full pl-10 pr-3.5 py-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 text-slate-500 dark:text-slate-400 font-semibold cursor-not-allowed select-none text-sm"
                     readOnly
                   />
@@ -56,7 +64,7 @@ const UserProfile = () => {
                   </div>
                   <input
                     type="email"
-                    defaultValue={user?.email}
+                    value={user?.email || ''}
                     className="block w-full pl-10 pr-3.5 py-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 text-slate-500 dark:text-slate-400 font-semibold cursor-not-allowed select-none text-sm"
                     readOnly
                   />
@@ -79,14 +87,16 @@ const UserProfile = () => {
                   rows="3" 
                   className="block w-full p-4 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-brand-indigo focus:border-transparent outline-none transition-all text-sm font-medium text-slate-800 dark:text-slate-200" 
                   placeholder="Introduce yourself to recruiters..." 
-                  defaultValue={user?.profile?.bio}
+                  value={bio}
+                  onChange={e => setBio(e.target.value)}
+                  maxLength={1000}
                 />
               </div>
             </div>
 
             {/* Save Buttons */}
             <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800/60">
-              <button className="flex items-center bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100 px-8 py-3.5 rounded-xl font-bold text-sm shadow-sm transition-colors cursor-pointer">
+              <button type="button" onClick={saveBio} disabled={saving} className="flex items-center bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100 px-8 py-3.5 rounded-xl font-bold text-sm shadow-sm transition-colors cursor-pointer disabled:opacity-50">
                 <Save className="w-4 h-4 mr-2" />
                 Save Settings
               </button>

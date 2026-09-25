@@ -27,7 +27,7 @@ const applyForJob = async (req, res) => {
 
     // Calculate match score (Basic logic for now, can be improved with AI)
     let matchScore = 0;
-    if (req.user.profile && req.user.profile.skills && job.skillsRequired) {
+    if (req.user.profile?.skills?.length && job.skillsRequired?.length) {
         const userSkills = req.user.profile.skills;
         const jobSkills = job.skillsRequired;
         const intersection = jobSkills.filter(skill =>
@@ -72,7 +72,7 @@ const getJobApplications = async (req, res) => {
 const getMyApplications = async (req, res) => {
     const applications = await Application.find({ candidateId: req.user._id })
         .populate('jobId', 'title company location type')
-        .populate('recruiterId', 'name')
+        .populate('recruiterId', 'name companyProfile')
         .sort({ createdAt: -1 });
 
     res.status(200).json(applications);

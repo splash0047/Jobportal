@@ -88,13 +88,13 @@ const JobDetails = () => {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div className="flex items-center gap-5">
               <div className="w-14 h-14 bg-slate-50 dark:bg-slate-950 border border-slate-200/40 dark:border-slate-800/40 rounded-xl flex items-center justify-center text-xl font-bold text-slate-500 dark:text-slate-450 shrink-0">
-                {job.recruiterId?.company?.charAt(0) || <Briefcase className="w-6 h-6" />}
+                {job.recruiterId?.companyProfile?.name?.charAt(0) || <Briefcase className="w-6 h-6" />}
               </div>
               <div className="overflow-hidden">
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white font-display truncate">{job.title}</h1>
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-sm font-semibold text-slate-500 dark:text-slate-400">
                   <span className="flex items-center"><MapPin className="w-4 h-4 mr-1 text-slate-400 dark:text-slate-500" /> {job.location}</span>
-                  <span className="flex items-center"><Briefcase className="w-4 h-4 mr-1 text-slate-400 dark:text-slate-500" /> {job.recruiterId?.company || 'Confidential'}</span>
+                  <span className="flex items-center"><Briefcase className="w-4 h-4 mr-1 text-slate-400 dark:text-slate-500" /> {job.recruiterId?.companyProfile?.name || 'Confidential'}</span>
                 </div>
               </div>
             </div>

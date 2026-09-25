@@ -3,25 +3,22 @@ import { Briefcase, Users, CheckCircle } from 'lucide-react';
 const DashboardStats = ({ stats }) => {
     const cards = [
         {
-            label: 'Active Job Postings',
-            value: stats.activeJobs,
+            label: 'Job Postings',
+            value: stats?.activeJobs ?? '—',
             icon: Briefcase,
-            iconColor: 'text-brand-indigo',
-            trend: '+12% this month'
+            iconColor: 'text-brand-indigo'
         },
         {
             label: 'Total Applicants',
-            value: stats.totalApplicants,
+            value: stats?.totalApplicants ?? '—',
             icon: Users,
-            iconColor: 'text-slate-700 dark:text-slate-300',
-            trend: '+5% this month'
+            iconColor: 'text-slate-700 dark:text-slate-300'
         },
         {
-            label: 'Successful Hires',
-            value: stats.hired,
+            label: 'Shortlisted Applicants',
+            value: stats?.shortlisted ?? '—',
             icon: CheckCircle,
-            iconColor: 'text-accent-emerald',
-            trend: '+2% this month'
+            iconColor: 'text-accent-emerald'
         },
     ];
 
@@ -39,11 +36,6 @@ const DashboardStats = ({ stats }) => {
                             <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/40 dark:border-slate-800/40 flex items-center justify-center">
                                 <Icon className={`w-5 h-5 ${card.iconColor}`} />
                             </div>
-                        </div>
-                        <div className="mt-5 flex">
-                            <span className="text-[10px] font-bold text-accent-emerald-dark dark:text-accent-emerald bg-accent-emerald/8 dark:bg-accent-emerald/10 border border-accent-emerald/15 dark:border-accent-emerald/20 px-2 py-0.5 rounded-md">
-                                {card.trend}
-                            </span>
                         </div>
                     </div>
                 );

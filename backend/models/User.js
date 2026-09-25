@@ -26,6 +26,13 @@ const userSchema = mongoose.Schema({
         experience: String, // Can be elaborated later
         bio: String
     },
+    companyProfile: {
+        name: String,
+        website: String,
+        description: String,
+        location: String
+    },
+    savedJobs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Job' }],
     resumeURL: {
         type: String
     }
