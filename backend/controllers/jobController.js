@@ -59,7 +59,13 @@ const createJob = async (req, res) => {
 // @route   GET /api/jobs
 // @access  Public
 const getJobs = async (req, res) => {
-    const jobs = await Job.find().populate('recruiterId', 'name company');
+    const { q, location, skill } = req.query;
+    const escape = value => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const filter = {};
+    if (q) filter.title = { $regex: escape(q), $options: 'i' };
+    if (location) filter.location = { $regex: escape(location), $options: 'i' };
+    if (skill) filter.skillsRequired = { $regex: escape(skill), $options: 'i' };
+    const jobs = await Job.find(filter).sort({ createdAt: -1 }).populate('recruiterId', 'name company');
     res.status(200).json(jobs);
 };
 

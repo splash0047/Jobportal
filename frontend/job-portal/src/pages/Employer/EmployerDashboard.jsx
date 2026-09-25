@@ -7,8 +7,7 @@ import RecentActivity from './components/RecentActivity';
 
 const EmployerDashboard = () => {
   const dispatch = useDispatch();
-  const { myJobs, loading } = useSelector((state) => state.jobs);
-  const { user } = useSelector((state) => state.auth);
+  const { myJobs } = useSelector((state) => state.jobs);
 
   useEffect(() => {
     dispatch(getMyJobs());

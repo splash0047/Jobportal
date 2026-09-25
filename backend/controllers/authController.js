@@ -1,6 +1,10 @@
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
 const sendEmail = require('../utils/sendEmail');
+const getCurrentUser = (req, res) => res.json({
+    _id: req.user._id, name: req.user.name, email: req.user.email,
+    role: req.user.role, profile: req.user.profile, resumeURL: req.user.resumeURL
+});
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
@@ -24,15 +28,18 @@ const registerUser = async (req, res) => {
     if (user) {
         // Send Welcome Email
         try {
-            await sendEmail({
-                email: user.email,
-                subject: 'Welcome to JobPortal!',
-                message: `
-                    <h1>Welcome, ${user.name}!</h1>
-                    <p>Thank you for registering at JobPortal. We are excited to have you on board as a ${user.role}.</p>
-                    <p>Start exploring jobs or posting opportunities today!</p>
-                `
-            });
+            if (process.env.SMTP_HOST && process.env.SMTP_EMAIL && process.env.SMTP_PASSWORD) {
+                const safeName = user.name.replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+                await sendEmail({
+                    email: user.email,
+                    subject: 'Welcome to JobPortal!',
+                    message: `
+                        <h1>Welcome, ${safeName}!</h1>
+                        <p>Thank you for registering at JobPortal. We are excited to have you on board as a ${user.role}.</p>
+                        <p>Start exploring jobs or posting opportunities today!</p>
+                    `
+                });
+            }
         } catch (error) {
             console.error('Email send failed:', error);
             // Don't fail the registration if email fails
@@ -71,4 +78,4 @@ const loginUser = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, loginUser };
+module.exports = { registerUser, loginUser, getCurrentUser };

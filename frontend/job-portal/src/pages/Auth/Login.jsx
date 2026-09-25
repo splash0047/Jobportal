@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { login } from '../../redux/slices/authSlice';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, CheckCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion } from 'framer-motion'; // eslint-disable-line no-unused-vars
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -19,7 +19,7 @@ const Login = () => {
         if (user) {
             setShowSuccess(true);
             const timer = setTimeout(() => {
-                if (user.role === 'recruiter' || user.role === 'employer') navigate('/employer-dashboard');
+                if (user.role === 'recruiter') navigate('/employer-dashboard');
                 else navigate('/find-jobs');
             }, 1800); // Redirect after success animation
             return () => clearTimeout(timer);

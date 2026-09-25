@@ -2,12 +2,12 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import API from '../../services/api';
 
 // Apply for Job
-export const applyForJob = createAsyncThunk('applications/apply', async ({ jobId, resumeURL }, { rejectWithValue }) => {
+export const applyForJob = createAsyncThunk('applications/apply', async ({ jobId }, { rejectWithValue }) => {
     try {
-        const { data } = await API.post('/applications', { jobId, resumeURL });
+        const { data } = await API.post('/applications', { jobId });
         return data;
     } catch (error) {
-        return rejectWithValue(error.response.data);
+        return rejectWithValue(error.response?.data || { message: 'Network error' });
     }
 });
 
@@ -17,7 +17,7 @@ export const getMyApplications = createAsyncThunk('applications/getMy', async (_
         const { data } = await API.get('/applications/my');
         return data;
     } catch (error) {
-        return rejectWithValue(error.response.data);
+        return rejectWithValue(error.response?.data || { message: 'Network error' });
     }
 });
 
@@ -27,7 +27,7 @@ export const getJobApplications = createAsyncThunk('applications/getByJob', asyn
         const { data } = await API.get(`/applications/job/${jobId}`);
         return data;
     } catch (error) {
-        return rejectWithValue(error.response.data);
+        return rejectWithValue(error.response?.data || { message: 'Network error' });
     }
 });
 
@@ -37,7 +37,7 @@ export const updateApplicationStatus = createAsyncThunk('applications/updateStat
         const { data } = await API.put(`/applications/${id}/status`, { status });
         return data;
     } catch (error) {
-        return rejectWithValue(error.response.data);
+        return rejectWithValue(error.response?.data || { message: 'Network error' });
     }
 });
 

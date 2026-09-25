@@ -1,10 +1,8 @@
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
 import EmployerLayout from './components/EmployerLayout';
 import { Building2, Globe, FileText, Save } from 'lucide-react';
 
 const EmployerProfilePage = () => {
-  const { user } = useSelector((state) => state.auth);
   const [formData, setFormData] = useState({
     companyName: 'Tech Corp Inc.', // Mock data or from user.companyName
     website: 'https://techcorp.com',

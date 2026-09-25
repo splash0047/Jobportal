@@ -5,6 +5,7 @@ const ENDPOINT = (import.meta.env.VITE_API_URL || 'http://localhost:5000').repla
 let socket;
 
 export const initiateSocketConnection = (token) => {
+    if (socket) socket.disconnect();
     socket = io(ENDPOINT, {
         auth: {
             token,
@@ -15,12 +16,6 @@ export const initiateSocketConnection = (token) => {
 
 export const disconnectSocket = () => {
     if (socket) socket.disconnect();
-};
-
-export const joinChatRoom = (userId) => {
-    if (socket && userId) {
-        socket.emit('join_chat', userId);
-    }
 };
 
 export const sendMessage = (messageData) => {

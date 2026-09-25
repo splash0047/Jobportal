@@ -1,43 +1,16 @@
-# 📖 User Guide
+# User guide
 
-## 🦸 Types of Users
-1. **Candidate**: Seeks jobs, uploads resumes, applies to positions.
-2. **Recruiter**: Posts jobs, reviews applications, manages candidates.
+## Candidate
 
-## For Candidates
+1. Register with the **candidate** role and sign in.
+2. Open **Profile** and upload a PDF resume (up to 5 MB). The application saves it to Cloudinary. If the parser is available, it also adds recognized skills to your profile. Resume parsing uses a fixed skill dictionary and may miss some skills.
+3. Browse **Find Jobs**. The search boxes filter the loaded job list by title/company and location. Open a job to apply; one application per candidate and job is allowed.
+4. Open **My Applications** to see `Applied`, `Shortlisted`, or `Rejected` and chat with the recruiter for an application.
 
-### 1. Build Your Profile
-- Go to **Dashboard** > **Profile**.
-- Upload your **Resume** (PDF/DOCX). 
-- Wait for the **AI Analyzer** to automatically extract your skills and experience.
-- Review the extracted data and save your profile.
+## Recruiter
 
-### 2. Find Jobs
-- Go to **"Find Jobs"**.
-- Use the **Search Bar** to find specific roles (e.g., "Frontend Developer").
-- Use **Filters** for Location, Salary Range, and Job Type.
-- Check **"Recommended Jobs"** to see positions that match your AI-extracted skills.
+1. Register with the **recruiter** role and sign in.
+2. Post jobs from the recruiter dashboard and open **Applications** to see applicants for each of your jobs.
+3. Shortlist or reject applicants. Use **Chat** to message candidates who applied to your jobs.
 
-### 3. Apply
-- Click on a Job Card to view details.
-- Click **"Apply Now"**.
-- Track your status in **"My Applications"**.
-
----
-
-## For Recruiters
-
-### 1. Post a Job
-- Go to **Dashboard** > **Post a Job**.
-- Fill in the details (Title, Description, Requirements, Salary).
-- Publish.
-
-### 2. Manage Applications
-- Go to **Dashboard** > **My Jobs**.
-- Click on a Job to see the **Applications** tab.
-- View a list of candidates who applied.
-- Click on a candidate to view their **AI-Parsed Profile** and Resume.
-- Change status to **Accepted** or **Rejected**.
-
-### 3. Chat with Candidates
-- If you find a promising candidate, use the **Chat** feature to send them a direct message.
+The company profile screen contains sample local form fields; it is not a saved company account profile. The backend rejects invalid or expired sessions. For a production rollout, protect stored resume URLs and verify upload scanning separately.

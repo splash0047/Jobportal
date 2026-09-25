@@ -1,11 +1,13 @@
 const Application = require('../models/Application');
 const Job = require('../models/Job');
+const mongoose = require('mongoose');
 
 // @desc    Apply for a job
 // @route   POST /api/applications
 // @access  Private (Candidate)
 const applyForJob = async (req, res) => {
-    const { jobId, resumeURL } = req.body;
+    const { jobId } = req.body;
+    if (!mongoose.isValidObjectId(jobId)) return res.status(400).json({ message: 'Invalid job ID' });
 
     // Check if job exists
     const job = await Job.findById(jobId);
@@ -34,13 +36,18 @@ const applyForJob = async (req, res) => {
         matchScore = (intersection.length / jobSkills.length) * 100;
     }
 
-    const application = await Application.create({
+    if (!req.user.resumeURL) return res.status(400).json({ message: 'Upload a resume before applying' });
+    let application;
+    try { application = await Application.create({
         jobId,
         candidateId: req.user._id,
         recruiterId: job.recruiterId, // Store for easier querying by recruiter
-        resumeURL: resumeURL || req.user.resumeURL,
+        resumeURL: req.user.resumeURL,
         matchScore
-    });
+    }); } catch (error) {
+        if (error.code === 11000) return res.status(409).json({ message: 'You have already applied for this job' });
+        throw error;
+    }
 
     res.status(201).json(application);
 };
@@ -49,6 +56,9 @@ const applyForJob = async (req, res) => {
 // @route   GET /api/applications/job/:jobId
 // @access  Private (Recruiter)
 const getJobApplications = async (req, res) => {
+    if (!mongoose.isValidObjectId(req.params.jobId)) return res.status(400).json({ message: 'Invalid job ID' });
+    const job = await Job.findOne({ _id: req.params.jobId, recruiterId: req.user._id });
+    if (!job) return res.status(404).json({ message: 'Job not found' });
     const applications = await Application.find({ jobId: req.params.jobId })
         .populate('candidateId', 'name email profile')
         .sort({ matchScore: -1 }); // Sort by best match
@@ -62,6 +72,7 @@ const getJobApplications = async (req, res) => {
 const getMyApplications = async (req, res) => {
     const applications = await Application.find({ candidateId: req.user._id })
         .populate('jobId', 'title company location type')
+        .populate('recruiterId', 'name')
         .sort({ createdAt: -1 });
 
     res.status(200).json(applications);
@@ -72,6 +83,8 @@ const getMyApplications = async (req, res) => {
 // @access  Private (Recruiter)
 const updateApplicationStatus = async (req, res) => {
     const { status } = req.body;
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ message: 'Invalid application ID' });
+    if (!['Applied', 'Shortlisted', 'Rejected'].includes(status)) return res.status(400).json({ message: 'Invalid status' });
     const application = await Application.findById(req.params.id);
 
     if (!application) {

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { Send, X } from 'lucide-react';
-import { initiateSocketConnection, disconnectSocket, joinChatRoom, sendMessage, subscribeToMessages } from '../services/socketService';
+import { initiateSocketConnection, disconnectSocket, sendMessage, subscribeToMessages } from '../services/socketService';
 import API from '../services/api';
 
 const ChatWindow = ({ recipientId, recipientName, onClose }) => {
@@ -27,7 +27,6 @@ const ChatWindow = ({ recipientId, recipientName, onClose }) => {
     useEffect(() => {
         if (user && recipientId) {
             initiateSocketConnection(user.token);
-            joinChatRoom(user._id);
 
             subscribeToMessages((message) => {
                 if (
@@ -52,7 +51,6 @@ const ChatWindow = ({ recipientId, recipientName, onClose }) => {
     const handleSend = () => {
         if (newMessage.trim()) {
             const messageData = {
-                senderId: user._id,
                 receiverId: recipientId,
                 message: newMessage
             };
