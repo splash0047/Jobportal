@@ -2,13 +2,19 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import API from '../../services/api';
 
 // Async Thunks
+export const hydrateUser = createAsyncThunk('auth/hydrate', async (_, { rejectWithValue }) => {
+    try {
+        const { data } = await API.get('/auth/me');
+        return data;
+    } catch (error) { return rejectWithValue(error.response?.data || { message: 'Session expired' }); }
+});
 export const login = createAsyncThunk('auth/login', async (userData, { rejectWithValue }) => {
     try {
         const { data } = await API.post('/auth/login', userData);
         localStorage.setItem('token', data.token);
         return data;
     } catch (error) {
-        return rejectWithValue(error.response.data);
+        return rejectWithValue(error.response?.data || { message: 'Network error' });
     }
 });
 
@@ -18,7 +24,7 @@ export const register = createAsyncThunk('auth/register', async (userData, { rej
         localStorage.setItem('token', data.token);
         return data;
     } catch (error) {
-        return rejectWithValue(error.response.data);
+        return rejectWithValue(error.response?.data || { message: 'Network error' });
     }
 });
 
@@ -34,7 +40,7 @@ export const uploadResume = createAsyncThunk('auth/uploadResume', async (resumeF
         });
         return data;
     } catch (error) {
-        return rejectWithValue(error.response.data);
+        return rejectWithValue(error.response?.data || { message: 'Network error' });
     }
 });
 
@@ -42,6 +48,7 @@ const initialState = {
     user: null,
     token: localStorage.getItem('token'),
     loading: false,
+    hydrating: Boolean(localStorage.getItem('token')),
     error: null,
     resumeSuccess: false,
 };
@@ -62,6 +69,17 @@ const authSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
+            .addCase(hydrateUser.fulfilled, (state, action) => {
+                state.hydrating = false;
+                if (!state.user) state.user = { ...action.payload, token: state.token };
+            })
+            .addCase(hydrateUser.rejected, (state) => {
+                if (state.user) { state.hydrating = false; return; }
+                localStorage.removeItem('token');
+                state.token = null;
+                state.user = null;
+                state.hydrating = false;
+            })
             // Login
             .addCase(login.pending, (state) => {
                 state.loading = true;
@@ -69,6 +87,7 @@ const authSlice = createSlice({
             })
             .addCase(login.fulfilled, (state, action) => {
                 state.loading = false;
+                state.hydrating = false;
                 state.user = action.payload;
                 state.token = action.payload.token;
             })
@@ -83,6 +102,7 @@ const authSlice = createSlice({
             })
             .addCase(register.fulfilled, (state, action) => {
                 state.loading = false;
+                state.hydrating = false;
                 state.user = action.payload;
                 state.token = action.payload.token;
             })

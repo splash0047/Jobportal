@@ -1,44 +1,32 @@
-# 🔌 API Reference
+# API reference
 
-## Base URLs
-- **Development**: `http://localhost:5000/api`
-- **Production**: Defined by `VITE_API_URL` env var (e.g., `https://job-portal-backend.up.railway.app`)
+Base URL: `http://localhost:5000/api`. Send `Authorization: Bearer <JWT>` on protected routes. Errors are JSON objects with a `message` string. The API and schema files are the authoritative source for field definitions.
 
-## 🔐 Authentication
-| Method | Endpoint | Description | Auth Required |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/auth/register` | Register a new user | No |
-| `POST` | `/api/auth/login` | Login and receive JWT | No |
+| Method | Path | Access | Notes |
+| --- | --- | --- | --- |
+| POST | `/auth/register` | Public | `name`, `email`, `password` (8–128 characters), `role` (`candidate` or `recruiter`); rate limited |
+| POST | `/auth/login` | Public | `email`, `password`; returns `_id`, `name`, `email`, `role`, `token`; rate limited |
+| GET | `/auth/me` | JWT | Returns current user without password |
+| GET | `/jobs` | Public | Array of jobs; optional `q` (title), `location`, `skill` filters |
+| GET | `/jobs/:id` | Public | One job |
+| GET | `/jobs/recommended` | Candidate | Ranked by case-insensitive skill overlap |
+| GET | `/jobs/myjobs` | Recruiter | Jobs created by this recruiter |
+| POST | `/jobs` | Recruiter | `title`, `description`, `location`, nonempty `skillsRequired`; optional `salary`, `type` |
+| DELETE | `/jobs/:id` | Job owner | Removes the job |
+| POST | `/applications` | Candidate | `jobId`; uses the candidate's stored resume URL; duplicate `(jobId, candidateId)` rejected |
+| GET | `/applications/my` | Candidate | Applications and recruiter name |
+| GET | `/applications/job/:jobId` | Job owner | Candidate details for this recruiter's job |
+| PUT | `/applications/:id/status` | Application's recruiter | `status`: `Applied`, `Shortlisted`, `Rejected` |
+| GET | `/chat/:userId` | Applicant or recruiter | Conversation history, requires shared application |
+| PUT | `/chat/read/:userId` | Applicant or recruiter | Marks messages as read |
+| POST | `/resume/upload` | JWT | Multipart `resume` PDF up to 5 MB; returns `resumeURL`, `profile`, `parsingAvailable` |
 
-## 💼 Jobs
-| Method | Endpoint | Description | Auth Required |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/jobs` | Get all jobs (with filters) | No |
-| `POST` | `/api/jobs` | Create a new job | Yes (Recruiter) |
-| `GET` | `/api/jobs/myjobs` | Get jobs posted by current recruiter | Yes (Recruiter) |
-| `GET` | `/api/jobs/recommended` | Get jobs matching candidate skills | Yes (Candidate) |
-| `GET` | `/api/jobs/:id` | Get job details | No |
-| `DELETE` | `/api/jobs/:id` | Delete a job | Yes (Recruiter) |
+`GET /health` is served at the Express root (outside `/api`). The upload stores the PDF in Cloudinary before parsing; when parsing fails, `fileParams` is `null` and `parsingAvailable` is `false`.
 
-## 📝 Applications
-| Method | Endpoint | Description | Auth Required |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/applications` | Apply for a job | Yes (Candidate) |
-| `GET` | `/api/applications/my` | Get my applications | Yes (Candidate) |
-| `GET` | `/api/applications/job/:jobId` | Get candidates for a job | Yes (Recruiter) |
-| `PUT` | `/api/applications/:id/status` | Update application status | Yes (Recruiter) |
+## Socket.io
 
-## 📄 Resume & AI
-| Method | Endpoint | Description | Auth Required |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/resume/upload` | Upload resume for AI analysis | Yes |
+Connect to the Express origin with `auth: { token: JWT }`. The server verifies it and joins only the authenticated user's room. Emit `send_message` with `{ receiverId, message }`; the server derives `senderId`. Recipient and sender must have a shared application. Receive `receive_message` with the saved message. The optional acknowledgment is `{ ok: true }` or `{ error: string }`.
 
-*Note: The AI Service runs internally and is not exposed to the public internet except via the Backend.*
+## PDF extraction service
 
-## 🤖 AI Service Endpoints (Internal)
-Base URL: `http://localhost:8000` (or `AI_SERVICE_URL`)
-
-| Method | Endpoint | Input | Output |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/` | None | Health Check |
-| `POST` | `/parse-resume` | `file` (Multipart/Form-Data) | `parsed_data` { skills, email, ... } |
+The backend calls `POST /parse-resume` with multipart field `file` and header `X-Service-Token: <AI_SERVICE_TOKEN>`. The same service token must be configured on both services. The service rejects unauthenticated, oversized or non-PDF uploads and deletes its temporary file after parsing. `GET /health` is public. Restrict network access to the service in deployment.

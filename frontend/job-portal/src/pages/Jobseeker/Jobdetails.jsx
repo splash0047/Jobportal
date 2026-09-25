@@ -34,7 +34,7 @@ const JobDetails = () => {
       navigate('/profile');
       return;
     }
-    dispatch(applyForJob({ jobId, resumeURL: user.resumeURL }));
+    dispatch(applyForJob({ jobId }));
   };
 
   if (loading) return (

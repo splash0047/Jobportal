@@ -30,6 +30,7 @@ const JobSeekerLayout = ({ children }) => {
     const navLinks = [
         { path: '/find-jobs', label: 'Find Jobs' },
         { path: '/saved-jobs', label: 'Saved Jobs' },
+        { path: '/my-applications', label: 'My Applications' },
     ];
 
     return (

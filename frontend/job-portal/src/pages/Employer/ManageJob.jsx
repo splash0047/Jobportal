@@ -9,7 +9,6 @@ const ManageJobs = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { myJobs, loading } = useSelector((state) => state.jobs);
-  const { user } = useSelector((state) => state.auth);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {

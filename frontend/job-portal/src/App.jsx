@@ -11,11 +11,12 @@ import Login from "./pages/Auth/Login";
 import JobSeekerDashboard from "./pages/Jobseeker/JobSeekerDashboard.jsx";
 import JobDetails from "./pages/Jobseeker/Jobdetails.jsx";
 import SavedJobs from "./pages/Jobseeker/SavedJobs.jsx";
+import MyApplications from "./pages/Jobseeker/MyApplications.jsx";
 import UserProfile from "./pages/Jobseeker/UserProfile.jsx";
 import EmployerDashboard from "./pages/Employer/EmployerDashboard.jsx";
 import JobPostingForm from "./pages/Employer/JobPostingForm.jsx";
 import ManageJobs from "./pages/Employer/ManageJob.jsx";
-import ApplicationsViewer from "./pages/Employer/ApplicationViewer.jsx";
+import ApplicationsViewer from "./pages/Employer/ApplicationsViewer.jsx";
 import EmployerProfilePage from "./pages/Employer/EmployerProfilePage.jsx";
 import ProtectedRoute from "./pages/routes/ProtectedRoute.jsx";
 
@@ -23,8 +24,12 @@ import ProtectedRoute from "./pages/routes/ProtectedRoute.jsx";
 
 
 import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { hydrateUser } from './redux/slices/authSlice';
 
 const App = () => {
+  const dispatch = useDispatch();
+  useEffect(() => { if (localStorage.getItem('token')) dispatch(hydrateUser()); }, [dispatch]);
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -48,11 +53,14 @@ const App = () => {
 
           <Route path="/find-jobs" element={<JobSeekerDashboard />} />
           <Route path="/jobs/:jobId" element={<JobDetails />} />
-          <Route path="/saved-jobs" element={<SavedJobs />} />
-          <Route path="/profile" element={<UserProfile />} />
+          <Route element={<ProtectedRoute requiredRole="candidate" />}>
+            <Route path="/saved-jobs" element={<SavedJobs />} />
+            <Route path="/my-applications" element={<MyApplications />} />
+            <Route path="/profile" element={<UserProfile />} />
+          </Route>
 
           {/* Protected Routes */}
-          <Route element={<ProtectedRoute requiredRole={["recruiter", "employer"]} />}>
+          <Route element={<ProtectedRoute requiredRole="recruiter" />}>
             <Route path="/employer-dashboard" element={<EmployerDashboard />} />
             <Route path="/post-job" element={<JobPostingForm />} />
             <Route path="/manage-jobs" element={<ManageJobs />} />

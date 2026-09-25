@@ -1,4 +1,5 @@
 const Message = require('../models/Message');
+const canChat = require('../utils/chatAccess');
 
 // @desc    Get chat history between two users
 // @route   GET /api/chat/:userId
@@ -6,6 +7,7 @@ const Message = require('../models/Message');
 const getChatHistory = async (req, res) => {
     const { userId } = req.params;
     const myId = req.user._id;
+    if (!(await canChat(myId, userId))) return res.status(403).json({ message: 'Chat unavailable' });
 
     const messages = await Message.find({
         $or: [
@@ -23,6 +25,7 @@ const getChatHistory = async (req, res) => {
 const markAsRead = async (req, res) => {
     const { userId } = req.params;
     const myId = req.user._id;
+    if (!(await canChat(myId, userId))) return res.status(403).json({ message: 'Chat unavailable' });
 
     await Message.updateMany(
         { senderId: userId, receiverId: myId, read: false },

@@ -2,9 +2,10 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 const ProtectedRoute = ({ requiredRole }) => {
-    const { user, token } = useSelector((state) => state.auth);
+    const { user, token, hydrating } = useSelector((state) => state.auth);
     const location = useLocation();
 
+    if (hydrating || (token && !user)) return <div role="status">Loading account...</div>;
     if (!token) {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
@@ -12,7 +13,7 @@ const ProtectedRoute = ({ requiredRole }) => {
     const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
 
     if (requiredRole && !roles.includes(user?.role)) {
-        return <Navigate to="/unauthorized" replace />; // Or handle better
+        return <Navigate to="/" replace />;
     }
 
     return <Outlet />;

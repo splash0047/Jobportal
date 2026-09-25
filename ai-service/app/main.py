@@ -1,44 +1,49 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-import shutil
 import os
+import secrets
+import tempfile
+from fastapi import FastAPI, UploadFile, File, Header, HTTPException
 from app.core.resume_parser import parse_resume
 
 app = FastAPI()
+MAX_PDF_BYTES = 5 * 1024 * 1024
 
-# CORS configuration
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-UPLOAD_DIR = "uploads"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-
-@app.get("/")
-def read_root():
-    return {"message": "AI Microservice is running"}
+@app.get("/health")
+def health():
+    return {"status": "ok"}
 
 @app.post("/parse-resume")
-async def parse_resume_endpoint(file: UploadFile = File(...)):
+async def parse_resume_endpoint(file: UploadFile = File(...), x_service_token: str = Header(default="")):
+    expected = os.environ.get("AI_SERVICE_TOKEN")
+    if not expected or not secrets.compare_digest(x_service_token, expected):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    if file.content_type != "application/pdf" or not (file.filename or "").lower().endswith(".pdf"):
+        raise HTTPException(status_code=415, detail="Only PDF resumes are supported")
+
+    path = None
     try:
-        file_location = f"{UPLOAD_DIR}/{file.filename}"
-        with open(file_location, "wb+") as file_object:
-            shutil.copyfileobj(file.file, file_object)
-            
-        # Parse the file
-        parsed_data = parse_resume(file_location)
-        
-        # Cleanup (optional, or keep for records)
-        # os.remove(file_location)
-        
-        return {"filename": file.filename, "parsed_data": parsed_data}
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as temporary:
+            path = temporary.name
+            total = 0
+            first = True
+            while chunk := await file.read(65536):
+                if first and not chunk.startswith(b"%PDF-"):
+                    raise HTTPException(status_code=415, detail="Invalid PDF file")
+                first = False
+                total += len(chunk)
+                if total > MAX_PDF_BYTES:
+                    raise HTTPException(status_code=413, detail="PDF exceeds 5 MB")
+                temporary.write(chunk)
+        if not total:
+            raise HTTPException(status_code=415, detail="Empty PDF file")
+        return {"filename": file.filename, "parsed_data": parse_resume(path)}
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=422, detail="PDF could not be parsed") from None
+    finally:
+        await file.close()
+        if path:
+            os.unlink(path)
 
 if __name__ == "__main__":
     import uvicorn

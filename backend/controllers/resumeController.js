@@ -2,7 +2,6 @@ const User = require('../models/User');
 const cloudinary = require('cloudinary').v2;
 const fs = require('fs');
 const axios = require('axios');
-const path = require('path');
 
 // Configure Cloudinary
 cloudinary.config({
@@ -22,68 +21,50 @@ const uploadResume = async (req, res) => {
     const filePath = req.file.path;
 
     try {
-        // 1. Send file to Python AI Service for parsing
-        // We need to send the file as form-data
-        const FormData = require('form-data');
-        const form = new FormData();
-        form.append('file', fs.createReadStream(filePath));
+        const signature = Buffer.alloc(5);
+        const handle = await fs.promises.open(filePath, 'r');
+        try { await handle.read(signature, 0, 5, 0); } finally { await handle.close(); }
+        if (signature.toString() !== '%PDF-') return res.status(400).json({ message: 'Invalid PDF file' });
 
-        console.log('Sending to AI Service...');
-        // Assuming AI service is on port 8000
-        const aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
-        const aiResponse = await axios.post(`${aiServiceUrl}/parse-resume`, form, {
-            headers: {
-                ...form.getHeaders()
-            }
-        });
+        const user = await User.findById(req.user._id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
 
-        const parsedData = aiResponse.data.parsed_data;
-        console.log('AI Parsed Data:', parsedData);
-
-        // 2. Upload to Cloudinary
-        console.log('Uploading to Cloudinary...');
+        // Save the PDF even if extraction is temporarily unavailable.
         const cloudinaryResponse = await cloudinary.uploader.upload(filePath, {
             resource_type: 'auto',
             folder: 'resumes'
         });
-
-        // 3. Update User Profile in MongoDB
-        const user = await User.findById(req.user._id);
-
-        if (user) {
-            user.resumeURL = cloudinaryResponse.secure_url;
-            user.profile = {
-                ...user.profile,
-                // Merge new skills with existing ones, avoiding duplicates
-                skills: Array.from(new Set([...(user.profile?.skills || []), ...parsedData.skills])),
-                experience: parsedData.experience || user.profile?.experience, // If AI extracts exp
-            };
-
-            const updatedUser = await user.save();
-
-            // Cleanup local file
-            fs.unlinkSync(filePath);
-
-            res.json({
-                message: 'Resume processed successfully',
-                resumeURL: updatedUser.resumeURL,
-                fileParams: parsedData,
-                profile: updatedUser.profile
-            });
-        } else {
-            res.status(404).json({ message: 'User not found' });
-            fs.unlinkSync(filePath);
+        let parsedData = null;
+        if (process.env.AI_SERVICE_TOKEN) {
+            try {
+                const FormData = require('form-data');
+                const form = new FormData();
+                form.append('file', fs.createReadStream(filePath), { filename: 'resume.pdf', contentType: 'application/pdf' });
+                const aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+                const aiResponse = await axios.post(`${aiServiceUrl}/parse-resume`, form, {
+                    headers: { ...form.getHeaders(), 'X-Service-Token': process.env.AI_SERVICE_TOKEN },
+                    timeout: 12000, maxBodyLength: 6 * 1024 * 1024
+                });
+                parsedData = aiResponse.data.parsed_data;
+            } catch (error) { console.warn('Resume extraction unavailable:', error.message); }
         }
+        user.resumeURL = cloudinaryResponse.secure_url;
+        if (parsedData) user.profile = {
+            ...user.profile,
+            skills: Array.from(new Set([...(user.profile?.skills || []), ...(parsedData.skills || [])]))
+        };
+        const updatedUser = await user.save();
+        return res.json({
+            message: parsedData ? 'Resume processed successfully' : 'Resume saved; automatic skill extraction unavailable',
+            resumeURL: updatedUser.resumeURL, fileParams: parsedData,
+            profile: updatedUser.profile, parsingAvailable: Boolean(parsedData)
+        });
 
     } catch (error) {
         console.error('Resume Processing Error:', error.message);
-        // Attempt cleanup
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-
-        res.status(500).json({
-            message: 'Resume upload/parsing failed',
-            error: error.message
-        });
+        return res.status(500).json({ message: 'Resume upload failed' });
+    } finally {
+        await fs.promises.unlink(filePath).catch(() => {});
     }
 };
 
