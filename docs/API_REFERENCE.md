@@ -17,15 +17,17 @@ Base URL: `http://localhost:5000/api`. Send `Authorization: Bearer <JWT>` on pro
 | PUT/DELETE | `/jobs/:id/save` | Candidate | Save/remove a job |
 | POST | `/jobs` | Recruiter | `title`, `description`, `location`, nonempty `skillsRequired`; optional `salary`, `type` |
 | DELETE | `/jobs/:id` | Job owner | Removes the job |
-| POST | `/applications` | Candidate | `jobId`; uses the candidate's stored resume URL; duplicate `(jobId, candidateId)` rejected |
+| POST | `/applications` | Candidate | `jobId`; copies the candidate's private resume asset; duplicate `(jobId, candidateId)` rejected |
 | GET | `/applications/my` | Candidate | Applications and recruiter name |
 | GET | `/applications/job/:jobId` | Job owner | Candidate details for this recruiter's job |
 | PUT | `/applications/:id/status` | Application's recruiter | `status`: `Applied`, `Shortlisted`, `Rejected` |
 | GET | `/chat/:userId` | Applicant or recruiter | Conversation history, requires shared application |
 | PUT | `/chat/read/:userId` | Applicant or recruiter | Marks messages as read |
-| POST | `/resume/upload` | JWT | Multipart `resume` PDF up to 5 MB; returns `resumeURL`, `profile`, `parsingAvailable` |
+| POST | `/resume/upload` | Candidate | Multipart `resume` PDF up to 5 MB; returns `hasResume`, `profile`, `parsingAvailable`; production requires ClamAV scan |
+| GET | `/resume/mine` | Candidate | Short-lived signed PDF link in `{url, expiresAt}` |
+| GET | `/resume/applications/:id` | Application's recruiter | Short-lived signed PDF link in `{url, expiresAt}` |
 
-`GET /health` is served at the Express root (outside `/api`). The upload stores the PDF in Cloudinary before parsing; when parsing fails, `fileParams` is `null` and `parsingAvailable` is `false`.
+`GET /health` and `GET /ready` are served at the Express root (outside `/api`); readiness requires MongoDB. The upload scans the PDF when configured, stores it as an authenticated Cloudinary asset, then attempts parsing. When parsing fails, `fileParams` is `null` and `parsingAvailable` is `false`. The API does not return permanent resume URLs. Legacy public resumes require reupload; signed links expire after five minutes.
 
 ## Socket.io
 

@@ -77,7 +77,7 @@ const authSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(updateProfile.fulfilled, (state, action) => {
-                state.user = { ...action.payload, token: state.token };
+                if (state.token) state.user = { ...action.payload, token: state.token };
             })
             .addCase(hydrateUser.fulfilled, (state, action) => {
                 state.hydrating = false;
@@ -132,7 +132,7 @@ const authSlice = createSlice({
                 state.parsingAvailable = action.payload.parsingAvailable;
                 // Update user profile with new skills and resume URL
                 if (state.user) {
-                    state.user.resumeURL = action.payload.resumeURL;
+                    state.user.hasResume = action.payload.hasResume;
                     state.user.profile = action.payload.profile;
                 }
             })

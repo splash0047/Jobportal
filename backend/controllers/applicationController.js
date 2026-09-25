@@ -1,6 +1,10 @@
 const Application = require('../models/Application');
 const Job = require('../models/Job');
 const mongoose = require('mongoose');
+const publicApplication = application => {
+    const { resumeAsset, resumeURL, ...data } = application.toObject();
+    return { ...data, hasResume: Boolean(resumeAsset?.publicId) };
+};
 
 // @desc    Apply for a job
 // @route   POST /api/applications
@@ -36,20 +40,20 @@ const applyForJob = async (req, res) => {
         matchScore = (intersection.length / jobSkills.length) * 100;
     }
 
-    if (!req.user.resumeURL) return res.status(400).json({ message: 'Upload a resume before applying' });
+    if (!req.user.resumeAsset?.publicId) return res.status(400).json({ message: 'Upload a resume before applying' });
     let application;
     try { application = await Application.create({
         jobId,
         candidateId: req.user._id,
         recruiterId: job.recruiterId, // Store for easier querying by recruiter
-        resumeURL: req.user.resumeURL,
+        resumeAsset: req.user.resumeAsset,
         matchScore
     }); } catch (error) {
         if (error.code === 11000) return res.status(409).json({ message: 'You have already applied for this job' });
         throw error;
     }
 
-    res.status(201).json(application);
+    res.status(201).json(publicApplication(application));
 };
 
 // @desc    Get applications for a specific job (Recruiter)
@@ -63,7 +67,7 @@ const getJobApplications = async (req, res) => {
         .populate('candidateId', 'name email profile')
         .sort({ matchScore: -1 }); // Sort by best match
 
-    res.status(200).json(applications);
+    res.status(200).json(applications.map(publicApplication));
 };
 
 // @desc    Get my applications (Candidate)
@@ -75,7 +79,7 @@ const getMyApplications = async (req, res) => {
         .populate('recruiterId', 'name companyProfile')
         .sort({ createdAt: -1 });
 
-    res.status(200).json(applications);
+    res.status(200).json(applications.map(publicApplication));
 };
 
 // @desc    Update application status
@@ -98,7 +102,7 @@ const updateApplicationStatus = async (req, res) => {
     application.status = status;
     await application.save();
 
-    res.status(200).json(application);
+    res.status(200).json(publicApplication(application));
 };
 
 module.exports = {

@@ -103,7 +103,7 @@ const jobSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            .addCase(logout, state => { state.savedJobs = []; })
+            .addCase(logout, state => { state.savedJobs = []; state.recruiterStats = null; state.myJobs = []; })
             .addCase(getRecruiterStats.fulfilled, (state, action) => { state.recruiterStats = action.payload; })
             .addCase(getSavedJobs.pending, state => { state.savedLoading = true; })
             .addCase(getSavedJobs.fulfilled, (state, action) => { state.savedLoading = false; state.savedJobs = action.payload; })

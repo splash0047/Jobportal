@@ -5,25 +5,25 @@ import {
   Navigate,
 } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import LandingPage from "./pages/LandingPage/LandingPage";
-import SignUp from "./pages/Auth/SignUp";
-import Login from "./pages/Auth/Login";
-import JobSeekerDashboard from "./pages/Jobseeker/JobSeekerDashboard.jsx";
-import JobDetails from "./pages/Jobseeker/Jobdetails.jsx";
-import SavedJobs from "./pages/Jobseeker/SavedJobs.jsx";
-import MyApplications from "./pages/Jobseeker/MyApplications.jsx";
-import UserProfile from "./pages/Jobseeker/UserProfile.jsx";
-import EmployerDashboard from "./pages/Employer/EmployerDashboard.jsx";
-import JobPostingForm from "./pages/Employer/JobPostingForm.jsx";
-import ManageJobs from "./pages/Employer/ManageJob.jsx";
-import ApplicationsViewer from "./pages/Employer/ApplicationsViewer.jsx";
-import EmployerProfilePage from "./pages/Employer/EmployerProfilePage.jsx";
+import { lazy, Suspense, useEffect } from 'react';
+const LandingPage = lazy(() => import('./pages/LandingPage/LandingPage'));
+const SignUp = lazy(() => import('./pages/Auth/SignUp'));
+const Login = lazy(() => import('./pages/Auth/Login'));
+const JobSeekerDashboard = lazy(() => import('./pages/Jobseeker/JobSeekerDashboard.jsx'));
+const JobDetails = lazy(() => import('./pages/Jobseeker/Jobdetails.jsx'));
+const SavedJobs = lazy(() => import('./pages/Jobseeker/SavedJobs.jsx'));
+const MyApplications = lazy(() => import('./pages/Jobseeker/MyApplications.jsx'));
+const UserProfile = lazy(() => import('./pages/Jobseeker/UserProfile.jsx'));
+const EmployerDashboard = lazy(() => import('./pages/Employer/EmployerDashboard.jsx'));
+const JobPostingForm = lazy(() => import('./pages/Employer/JobPostingForm.jsx'));
+const ManageJobs = lazy(() => import('./pages/Employer/ManageJob.jsx'));
+const ApplicationsViewer = lazy(() => import('./pages/Employer/ApplicationsViewer.jsx'));
+const EmployerProfilePage = lazy(() => import('./pages/Employer/EmployerProfilePage.jsx'));
 import ProtectedRoute from "./pages/routes/ProtectedRoute.jsx";
 
 
 
 
-import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { hydrateUser } from './redux/slices/authSlice';
 
@@ -45,7 +45,7 @@ const App = () => {
 
 
       <Router>
-        <Routes>
+        <Suspense fallback={<div className="p-8 text-center" role="status">Loading page...</div>}><Routes>
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/signup" element={<SignUp />} />
@@ -72,7 +72,7 @@ const App = () => {
           {/* Catch all routes */}
           <Route path="*" element={<Navigate to="/" replace />} />
 
-        </Routes>
+        </Routes></Suspense>
       </Router>
       <Toaster
         toastOptions={{

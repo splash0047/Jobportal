@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { uploadResume, resetResumeSuccess } from '../../redux/slices/authSlice';
 import { UploadCloud, FileText, CheckCircle, X, Loader2 } from 'lucide-react';
+import { openResume } from '../../services/resume';
 
 const ResumeUpload = () => {
     const [file, setFile] = useState(null);
@@ -44,7 +45,7 @@ const ResumeUpload = () => {
                         </div>
                         <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider animate-pulse">Uploading and checking your PDF...</span>
                     </div>
-                ) : !file && !user?.resumeURL ? (
+                ) : !file && !user?.hasResume ? (
                     <label htmlFor="resume-upload" className="cursor-pointer flex flex-col items-center">
                         <div className="w-10 h-10 bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 rounded-xl flex items-center justify-center mb-3 border border-slate-200/40 dark:border-slate-800/40">
                             <UploadCloud className="w-5 h-5" />
@@ -60,10 +61,10 @@ const ResumeUpload = () => {
                             </div>
                             <div className="text-left overflow-hidden">
                                 <p className="text-sm font-bold text-slate-900 dark:text-white truncate max-w-[200px] sm:max-w-xs">{file ? file.name : 'Current Resume'}</p>
-                                {user?.resumeURL && !file && (
-                                    <a href={user.resumeURL} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-brand-indigo hover:text-brand-indigo-dark transition-colors hover:underline">
+                                {user?.hasResume && !file && (
+                                    <button type="button" onClick={() => openResume('/resume/mine')} className="text-xs font-bold text-brand-indigo hover:text-brand-indigo-dark transition-colors hover:underline">
                                         View Uploaded Resume
-                                    </a>
+                                    </button>
                                 )}
                             </div>
                         </div>

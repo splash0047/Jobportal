@@ -35,6 +35,10 @@ const userSchema = mongoose.Schema({
     savedJobs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Job' }],
     resumeURL: {
         type: String
+    }, // Legacy public upload; users must reupload before using private resume delivery.
+    resumeAsset: {
+        publicId: String,
+        resourceType: String
     }
 }, {
     timestamps: true

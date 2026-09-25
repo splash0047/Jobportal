@@ -18,7 +18,11 @@ const applicationSchema = mongoose.Schema({
     },
     resumeURL: {
         type: String,
-        required: true
+        // Legacy public upload; no longer returned to clients.
+    },
+    resumeAsset: {
+        publicId: String,
+        resourceType: String
     },
     status: {
         type: String,

@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import API from '../../services/api';
+import { logout } from './authSlice';
 
 // Apply for Job
 export const applyForJob = createAsyncThunk('applications/apply', async ({ jobId }, { rejectWithValue }) => {
@@ -60,6 +61,7 @@ const applicationSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
+            .addCase(logout, state => { state.myApplications = []; state.jobApplications = []; state.success = false; })
             // Apply
             .addCase(applyForJob.pending, (state) => {
                 state.loading = true;
