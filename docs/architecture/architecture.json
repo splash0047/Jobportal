@@ -1,0 +1,176 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "JobPortal runtime architecture",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/splash0047/Jobportal",
+      "provider": "github",
+      "revision": "acea482c2dfff9eacfe3be2404b60410aa1b7b0f"
+    }
+  },
+  "components": [
+    {
+      "id": "web",
+      "type": "frontend",
+      "label": "React client",
+      "pos": [
+        65,
+        300
+      ],
+      "size": [
+        160,
+        70
+      ],
+      "sources": [
+        {
+          "path": "frontend/job-portal/src/App.jsx"
+        }
+      ],
+      "sublabel": "candidate / recruiter"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "Express API",
+      "pos": [
+        340,
+        300
+      ],
+      "size": [
+        160,
+        70
+      ],
+      "sources": [
+        {
+          "path": "backend/server.js"
+        }
+      ],
+      "sublabel": "JWT + REST + Socket.IO"
+    },
+    {
+      "id": "mongo",
+      "type": "database",
+      "label": "MongoDB",
+      "pos": [
+        650,
+        300
+      ],
+      "size": [
+        160,
+        70
+      ],
+      "sources": [
+        {
+          "path": "backend/config/db.js"
+        }
+      ],
+      "sublabel": "users, jobs, applications, chat"
+    },
+    {
+      "id": "scan",
+      "type": "security",
+      "label": "ClamAV",
+      "pos": [
+        65,
+        100
+      ],
+      "size": [
+        160,
+        70
+      ],
+      "sources": [
+        {
+          "path": "backend/utils/scanPdf.js"
+        }
+      ],
+      "sublabel": "PDF scan"
+    },
+    {
+      "id": "store",
+      "type": "cloud",
+      "label": "Cloudinary",
+      "pos": [
+        650,
+        100
+      ],
+      "size": [
+        160,
+        70
+      ],
+      "sources": [
+        {
+          "path": "backend/controllers/resumeController.js"
+        }
+      ],
+      "sublabel": "authenticated PDFs"
+    },
+    {
+      "id": "parser",
+      "type": "backend",
+      "label": "FastAPI parser",
+      "pos": [
+        650,
+        510
+      ],
+      "size": [
+        160,
+        70
+      ],
+      "sources": [
+        {
+          "path": "ai-service/app/main.py"
+        }
+      ],
+      "sublabel": "optional resume extraction"
+    }
+  ],
+  "connections": [
+    {
+      "from": "web",
+      "to": "api",
+      "label": "REST / JWT + socket"
+    },
+    {
+      "from": "api",
+      "to": "mongo",
+      "label": "Mongoose"
+    },
+    {
+      "from": "api",
+      "to": "scan",
+      "label": "upload scan",
+      "fromSide": "top",
+      "toSide": "right"
+    },
+    {
+      "from": "api",
+      "to": "store",
+      "label": "signed resume assets",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "from": "api",
+      "to": "parser",
+      "label": "service token"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Runtime path",
+      "items": [
+        "API enforces ownership and chat permissions"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Implementation note",
+      "items": [
+        "Resume parsing is optional; upload scanning is required in production"
+      ]
+    }
+  ]
+}
