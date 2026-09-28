@@ -15,15 +15,13 @@ This is an implementation and learning project. The matching score is **case-ins
 | Extraction | Python 3.12, FastAPI, PDFMiner | Optional skill and contact extraction behind a shared service token |
 | Upload scanning | ClamAV `clamscan` | Required and fail-closed when `NODE_ENV=production` |
 
-```mermaid
-flowchart LR
-    Web[React client] -->|REST and JWT| API[Express API]
-    Web -->|JWT socket| API
-    API --> DB[(MongoDB)]
-    API --> Store[Cloudinary]
-    API -->|Service token| Parser[FastAPI parser]
-    API --> Scanner[ClamAV scanner]
-```
+## Architecture
+
+![Current system architecture](docs/architecture/architecture.svg)
+
+[Download the interactive Archify diagram (open locally)](docs/architecture/architecture.html) · [View the source specification](docs/architecture/architecture.json)
+
+This diagram maps the components present in the repository. Optional integrations and implementation limits are called out in the diagram.
 
 The API owns authorization. The frontend is never trusted to supply a candidate ID, recruiter ID, stored resume URL or chat sender. Socket connections authenticate with a JWT and can message only a user linked by an application. The optional parser can fail without losing an otherwise valid, scanned upload.
 
